@@ -105,7 +105,7 @@
                             <button type="button" class="secondary-btn" onclick="renderSalesChart('yearly')">Yearly</button>
                         </div>
                     </div>
-                    <div style="padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                    <div class="chart-wrapper">
                         <canvas id="salesAnalyticsChart"></canvas>
                     </div>
                 </div>
@@ -127,9 +127,9 @@
                     <div id="owner-monitor-status" class="owner-status"></div>
 
                     <div class="owner-review-panel">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <div class="review-header-row">
                             <div class="review-heading" style="margin: 0;">Saved Activity Review</div>
-                            <button id="btn-review-all-logs" class="secondary-btn" type="button" style="padding: 6px 12px; font-size: 0.85rem;">
+                            <button id="btn-review-all-logs" class="secondary-btn review-all-logs-btn" type="button">
                                 📋 Review All Logs
                             </button>
                         </div>

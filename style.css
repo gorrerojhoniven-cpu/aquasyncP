@@ -658,6 +658,20 @@ button, input, textarea {
     gap: 12px;
 }
 
+.review-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    gap: 12px;
+}
+
+.review-all-logs-btn {
+    padding: 6px 12px !important;
+    font-size: 0.85rem !important;
+    border-radius: 12px !important;
+}
+
 #btn-review-undo.hidden {
     display: none;
 }
@@ -984,24 +998,65 @@ button, input, textarea {
     border-color: rgba(248, 113, 113, 0.35);
 }
 
+.chart-wrapper {
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    position: relative;
+    width: 100%;
+    overflow: hidden;
+}
+
 @media (max-width: 720px) {
+    .app-shell {
+        padding: 12px;
+    }
+
     .topbar {
         flex-direction: column;
         gap: 12px;
         align-items: flex-start;
+        padding: 14px 16px;
     }
 
     .dashboard-card {
-        padding: 18px;
+        padding: 16px;
+    }
+
+    .dashboard-heading h2 {
+        font-size: 1.5rem !important;
+    }
+
+    .owner-monitor-card {
+        padding: 16px !important;
+        gap: 20px !important;
+        border-width: 2px !important;
+    }
+
+    .owner-actions-row {
+        flex-wrap: wrap;
+        gap: 8px;
+        width: 100% !important;
+    }
+
+    .owner-actions-row button {
+        flex: 1 1 calc(50% - 8px);
+        padding: 10px 14px;
+        font-size: 0.9rem;
+        border-radius: 12px;
     }
 
     .owner-stats-grid,
-    .sales-summary-grid,
     .owner-histogram-grid,
     .manual-history-controls,
     .action-grid,
     .stats-grid {
         grid-template-columns: 1fr !important;
+    }
+
+    .sales-summary-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 10px;
     }
 
     .manual-history-controls {
@@ -1013,14 +1068,86 @@ button, input, textarea {
     .owner-stat-card,
     .activity-log-card,
     .owner-sales-panel {
-        padding: 18px;
+        padding: 14px;
+    }
+
+    .owner-sales-panel,
+    .activity-logs-section {
+        padding: 14px !important;
+    }
+
+    .owner-stat-card input {
+        padding: 12px 14px;
+        font-size: 1.25rem;
+        border-radius: 12px;
+    }
+
+    .owner-summary-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 12px;
+    }
+
+    .summary-controls {
+        display: flex;
+        width: 100%;
+        gap: 8px;
+    }
+
+    .summary-controls button,
+    .summary-controls input {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+        font-size: 0.85rem;
+        border-radius: 10px;
+    }
+
+    .chart-wrapper {
+        padding: 8px;
     }
 
     .chart-bars {
         grid-template-columns: repeat(6, minmax(0, 1fr));
     }
+
+    .review-header-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .review-header-row button {
+        width: 100%;
+        padding: 10px 14px;
+        font-size: 0.9rem;
+    }
+
+    .review-controls-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .dashboard-actions,
+    #btn-save-owner,
+    #btn-save-activity {
+        width: 100% !important;
+        border-radius: 12px !important;
+    }
 }
-/* Ilagay sa pinakadulo ng style.css */
+
+@media (max-width: 480px) {
+    .owner-actions-row button {
+        flex: 1 1 100%;
+    }
+
+    .sales-summary-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+
+/* Owner monitor card base styles */
 .owner-monitor-card {
     display: flex !important;
     flex-direction: column !important;
@@ -1047,6 +1174,7 @@ button, input, textarea {
     border-radius: 8px !important;
     padding: 20px !important;
 }
+
 .hidden {
     display: none !important;
 }
