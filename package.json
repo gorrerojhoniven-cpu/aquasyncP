@@ -1,0 +1,13 @@
+{
+  "name": "aquasync-sia",
+  "version": "1.0.0",
+  "description": "AquaSync web + database integrated dashboard",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "sqlite3": "^5.1.4"
+  }
+}

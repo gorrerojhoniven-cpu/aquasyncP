@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AquaSync Login</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div id="app-shell" class="app-shell">
+        <header class="topbar">
+            <div class="brand">
+                <div class="brand-mark">A</div>
+                <div>
+                    <h1>AquaSync Control</h1>
+                    <p>Separate owner and staff access</p>
+                </div>
+            </div>
+            <div class="topbar-actions">
+                <button id="btn-theme-toggle" class="secondary-btn" type="button">☀️ Light mode</button>
+                <button id="btn-logout" class="logout-btn hidden" type="button">Logout</button>
+            </div>
+        </header>
+
+        <div id="toast-container" class="toast-container"></div>
+
+        <main class="dashboard-container">
+            <!-- ================= OWNER DASHBOARD ================= -->
+            <section id="owner-dashboard" class="dashboard-card hidden owner-monitor-card">
+                
+                <div class="dashboard-heading">
+                    <p class="eyebrow">AquaSync System</p>
+                    <h2 style="font-size: 1.8rem; letter-spacing: 1px;">OWNER WORKPLACE</h2>
+                    <p>Type directly inside any field to manually overwrite or set values to 0.</p>
+                </div>
+
+                <div class="owner-actions-row">
+                    <button id="btn-owner-undo" class="secondary-btn" type="button" disabled>UNDO ACTION</button>
+                    <button id="btn-owner-reset" class="danger-btn" type="button">RESET TO ZERO</button>
+                    <button id="btn-manage-staff" class="secondary-btn" type="button">👥 Manage Staff</button>
+                </div>
+
+                <div class="owner-stats-grid">
+                    <label class="owner-stat-card">
+                        <span class="stat-label">Total Cash Today (₱)</span>
+                        <input id="input-stat-revenue" type="number" value="1200" data-stat="revenue" min="0" oninput="if(this.value < 0) this.value = 0;">
+                    </label>
+                    <label class="owner-stat-card owner-highlight-card">
+                        <span class="stat-label">Remaining Tank Water (liters)</span>
+                        <input id="input-stat-water" type="number" value="1232" data-stat="water" min="0" oninput="if(this.value < 0) this.value = 0;">
+                    </label>
+                    <label class="owner-stat-card">
+                        <span class="stat-label">Empty Jug Shells (in shop)</span>
+                        <input id="input-stat-containers" type="number" value="65" data-stat="containers" min="0" oninput="if(this.value < 0) this.value = 0;">
+                    </label>
+                    <label class="owner-stat-card">
+                        <span class="stat-label">Borrowed Jugs (out with clients)</span>
+                        <input id="input-stat-borrowed" type="number" value="112" data-stat="borrowed" min="0" oninput="if(this.value < 0) this.value = 0;">
+                    </label>
+                </div>
+
+                <div class="dashboard-actions" style="margin-bottom: 25px;">
+                    <button id="btn-save-owner" class="primary-btn" type="button">Save Owner Changes</button>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.15); margin: 30px 0;">
+
+                <div class="owner-sales-panel">
+                    <div class="owner-summary-header">
+                        <div class="sales-title" style="font-size: 1.4rem; font-weight: bold; color: #38bdf8;">SALES SUMMARY</div>
+                        <div class="summary-controls">
+                            <input id="owner-summary-date" type="date" class="summary-date-picker">
+                            <button id="btn-refresh-sales" class="secondary-btn" type="button">Refresh</button>
+                        </div>
+                    </div>
+                    <div class="sales-summary-grid">
+                        <article class="summary-card">
+                            <span>Daily Sales</span>
+                            <strong id="daily-sales">₱0</strong>
+                        </article>
+                        <article class="summary-card">
+                            <span>Monthly Sales</span>
+                            <strong id="monthly-sales">₱0</strong>
+                        </article>
+                        <article class="summary-card">
+                            <span>Yearly Sales</span>
+                            <strong id="yearly-sales">₱0</strong>
+                        </article>
+                        <article class="summary-card">
+                            <span>Total Orders</span>
+                            <strong id="summary-count">0</strong>
+                        </article>
+                    </div>
+                </div>
+
+                <!-- Sales Analytics Graph -->
+                <div class="owner-sales-panel" style="margin-top: 20px;">
+                    <div class="owner-summary-header">
+                        <div class="sales-title">Sales Analytics Graph</div>
+                        <div class="summary-controls">
+                            <button type="button" class="secondary-btn" onclick="renderSalesChart('daily')">Daily</button>
+                            <button type="button" class="secondary-btn" onclick="renderSalesChart('monthly')">Monthly</button>
+                            <button type="button" class="secondary-btn" onclick="renderSalesChart('yearly')">Yearly</button>
+                        </div>
+                    </div>
+                    <div style="padding: 15px; background: rgba(255,255,255,0.05); border-radius: 8px;">
+                        <canvas id="salesAnalyticsChart"></canvas>
+                    </div>
+                </div>
+
+                <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.15); margin: 30px 0;">
+
+                <div class="activity-logs-section">
+                    <div class="sales-title" style="font-size: 1.4rem; font-weight: bold; color: #38bdf8; margin-bottom: 15px;">ACTIVITY LOGS</div>
+
+                    <div class="activity-log-card" style="margin-bottom: 15px;">
+                        <div class="log-heading">SIMPLIFIED ACTIVITY LOG:</div>
+                        <textarea id="owner-activity-log" readonly style="width: 100%; height: 120px; font-family: monospace;">System ready. Monitoring staff activity...</textarea>
+                    </div>
+
+                    <div style="margin-bottom: 20px;">
+                        <button id="btn-save-activity" class="secondary-btn" type="button">Save Activity Log</button>
+                    </div>
+
+                    <div id="owner-monitor-status" class="owner-status"></div>
+
+                    <div class="owner-review-panel">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <div class="review-heading" style="margin: 0;">Saved Activity Review</div>
+                            <button id="btn-review-all-logs" class="secondary-btn" type="button" style="padding: 6px 12px; font-size: 0.85rem;">
+                                📋 Review All Logs
+                            </button>
+                        </div>
+                        <div class="review-controls-row">
+                            <div id="owner-review-total" class="review-total">Total saved amount: ₱0</div>
+                            <button id="btn-review-undo" class="secondary-btn hidden" type="button">Undo delete</button>
+                        </div>
+                        <div id="owner-review-list" class="review-list">No saved activity yet.</div>
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- ================= STAFF DASHBOARD (NAKA-TAGO SA SIMULA) ================= -->
+            <section id="staff-dashboard" class="dashboard-card hidden staff-pos-card">
+                <div class="dashboard-heading">
+                    <p class="eyebrow">Staff POS Simulator</p>
+                    <h2>Step 1: Select Current Shop Activity</h2>
+                    <p>Choose the appropriate action and confirm the order.</p>
+                    <button id="btn-staff-profile" class="secondary-btn" type="button" style="margin-top: 10px; float: right;">👤 My Profile</button>
+                </div>
+
+                <div class="pos-section">
+                    <div class="pos-subtitle">🏪 Walk-in counter sales (manual entry)</div>
+                    <div class="action-grid">
+                        <article class="action-card active-action">
+                            <div class="action-card-header">
+                                <span class="action-label">5-Gallon Water Refill</span>
+                                <span class="action-price">₱20.00</span>
+                            </div>
+                            <div class="action-card-body">
+                                <input type="number" class="action-qty" placeholder="Qty" min="0" oninput="if(this.value < 0) this.value = 0;">
+                                <button type="button" class="action-set-btn">Set Qty</button>
+                            </div>
+                        </article>
+                        <article class="action-card">
+                            <div class="action-card-header">
+                                <span class="action-label">New Jug + Water Combo</span>
+                                <span class="action-price">₱225.00</span>
+                            </div>
+                            <div class="action-card-body">
+                                <input type="number" class="action-qty" placeholder="Qty" min="0" oninput="if(this.value < 0) this.value = 0;">
+                                <button type="button" class="action-set-btn">Set Qty</button>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+
+                <div class="pos-section">
+                    <div class="pos-subtitle">🚚 Home delivery logistics (manual entry)</div>
+                    <div class="action-grid">
+                        <article class="action-card">
+                            <div class="action-card-header">
+                                <span class="action-label">Dispatch Full Refills</span>
+                                <span class="action-meta">₱25.00 each (₱20 refill + ₱5 delivery fee)</span>
+                            </div>
+                            <div class="action-card-body">
+                                <input type="number" class="action-qty" placeholder="Qty" min="0" oninput="if(this.value < 0) this.value = 0;">
+                                <button type="button" class="action-set-btn">Set Qty</button>
+                            </div>
+                        </article>
+                        <article class="action-card">
+                            <div class="action-card-header">
+                                <span class="action-label">Recover Empty Gallons</span>
+                                <span class="action-meta">Rider returns empty shells to shop</span>
+                            </div>
+                            <div class="action-card-body">
+                                <input type="number" class="action-qty" placeholder="Qty" min="0" oninput="if(this.value < 0) this.value = 0;">
+                                <button type="button" class="action-set-btn">Set Qty</button>
+                            </div>
+                        </article>
+                    </div>
+                </div>
+
+                <div class="owner-sales-panel staff-summary-panel">
+                    <div class="owner-summary-header">
+                        <div class="sales-title">Staff Inventory Snapshot</div>
+                    </div>
+                    <div class="sales-summary-grid">
+                        <article class="summary-card">
+                            <span>Cash Available</span>
+                            <strong id="staff-revenue">₱0</strong>
+                        </article>
+                        <article class="summary-card">
+                            <span>Water Remaining</span>
+                            <strong id="staff-water">0 L</strong>
+                        </article>
+                        <article class="summary-card">
+                            <span>Jug Shells</span>
+                            <strong id="staff-containers">0</strong>
+                        </article>
+                        <article class="summary-card">
+                            <span>Borrowed Jugs</span>
+                            <strong id="staff-borrowed">0</strong>
+                        </article>
+                    </div>
+                </div>
+
+                <div class="staff-order-summary">
+                    <div class="step-pill">2</div>
+                    <div>
+                        <div class="summary-label">Step 2: Double-check action details</div>
+                        <div class="summary-value" id="staged-action-text">👉 Staged Action: 12 Walk-in Refill(s) (Customer pays ₱240)</div>
+                    </div>
+                </div>
+
+                <div class="staff-order-summary confirm-section">
+                    <div class="step-pill">3</div>
+                    <div>
+                        <div class="summary-label">Step 3: Save to ledger</div>
+                        <button type="button" class="confirm-btn">Confirm & Save Order Now →</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <div id="auth-overlay" class="auth-overlay">
+        <div class="auth-card">
+            <div class="role-switcher" role="tablist" aria-label="Choose login role">
+                <button type="button" id="btn-role-owner" class="role-btn active">👑 Owner</button>
+                <button type="button" id="btn-role-staff" class="role-btn">👥 Staff</button>
+            </div>
+
+            <div class="auth-header">
+                <div id="auth-logo" class="auth-logo">A</div>
+                <h2 id="auth-title">Owner Security Login</h2>
+                <p id="auth-subtitle">Please log in to access your AquaSync system terminal.</p>
+            </div>
+
+            <form id="auth-form" class="auth-form">
+                <div class="field">
+                    <label for="auth-username">Username</label>
+                    <input type="text" id="auth-username" placeholder="Enter username" required>
+                </div>
+                <div class="field">
+                    <label for="auth-password">Password</label>
+                    <input type="password" id="auth-password" placeholder="••••••••" required>
+                    <div class="checkbox-row">
+                        <input type="checkbox" id="chk-show-password">
+                        <label for="chk-show-password">Show Password</label>
+                    </div>
+                </div>
+
+                <button type="submit" id="btn-auth-submit" class="primary-btn auth-submit-btn">Access System Terminal</button>
+            </form>
+
+            <div class="auth-footer">
+                <button id="btn-toggle-auth" type="button">Create Owner Account</button>
+                <button id="btn-theme-toggle-auth" class="secondary-btn" type="button">☀️ Light mode</button>
+            </div>
+            <p id="auth-status" class="auth-status"></p>
+        </div>
+    </div>
+
+    <!-- MODAL PARA SA STAFF MANAGEMENT -->
+    <dialog id="modal-staff-management" style="padding: 20px; border-radius: 8px; border: 1px solid #444; background: #1e1e2e; color: #fff; max-width: 700px; width: 95%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 style="margin: 0; font-size: 1.1rem;">👥 Staff Account Management</h3>
+            <button id="btn-close-staff-modal" type="button" style="background: transparent; border: none; color: #fff; font-size: 1.2rem; cursor: pointer;">✕</button>
+        </div>
+        
+        <!-- Create Staff Section -->
+        <div style="background: #11111b; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #333;">
+            <h4 style="margin-top: 0; color: #38bdf8;">Create New Staff Account</h4>
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <input id="staff-create-username" type="text" placeholder="Username" style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff;">
+                <input id="staff-create-password" type="password" placeholder="Password" style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff;">
+                <button id="btn-create-staff" class="primary-btn" type="button" style="padding: 8px 16px;">Create</button>
+            </div>
+            <div id="staff-create-status" style="color: #38bdf8; font-size: 0.9rem;"></div>
+        </div>
+
+        <!-- Staff List Section -->
+        <div style="background: #11111b; padding: 15px; border-radius: 6px; border: 1px solid #333;">
+            <h4 style="margin-top: 0; color: #38bdf8;">Existing Staff Accounts</h4>
+            <div id="staff-list-container" style="max-height: 300px; overflow-y: auto;">
+                <p style="color: #999; text-align: center;">Loading staff list...</p>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- MODAL PARA SA STAFF PROFILE -->
+    <dialog id="modal-staff-profile" style="padding: 20px; border-radius: 8px; border: 1px solid #444; background: #1e1e2e; color: #fff; max-width: 600px; width: 95%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 style="margin: 0; font-size: 1.1rem;">👤 My Profile</h3>
+            <button id="btn-close-profile-modal" type="button" style="background: transparent; border: none; color: #fff; font-size: 1.2rem; cursor: pointer;">✕</button>
+        </div>
+        
+        <!-- Profile Photo Section -->
+        <div style="background: #11111b; padding: 15px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #333; text-align: center;">
+            <h4 style="margin-top: 0; color: #38bdf8;">Profile Photo</h4>
+            <div id="staff-photo-display" style="width: 120px; height: 120px; margin: 0 auto 15px; border-radius: 8px; background: #222; border: 2px solid #38bdf8; display: flex; align-items: center; justify-content: center; color: #666; font-size: 3rem; overflow: hidden;">
+                📷
+            </div>
+            <input id="staff-photo-input" type="file" accept="image/*" style="margin-bottom: 10px;">
+            <button id="btn-upload-photo" class="primary-btn" type="button" style="padding: 8px 16px;">Upload Photo</button>
+            <div id="staff-photo-status" style="color: #38bdf8; font-size: 0.9rem; margin-top: 10px;"></div>
+        </div>
+
+        <!-- Change Password Section -->
+        <div style="background: #11111b; padding: 15px; border-radius: 6px; border: 1px solid #333;">
+            <h4 style="margin-top: 0; color: #38bdf8;">Change Password</h4>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <input id="staff-old-password" type="password" placeholder="Current Password" style="padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff;">
+                <input id="staff-new-password" type="password" placeholder="New Password" style="padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff;">
+                <input id="staff-confirm-password" type="password" placeholder="Confirm New Password" style="padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff;">
+                <button id="btn-change-password" class="primary-btn" type="button" style="padding: 8px 16px;">Change Password</button>
+            </div>
+            <div id="staff-password-status" style="color: #38bdf8; font-size: 0.9rem; margin-top: 10px;"></div>
+        </div>
+    </dialog>
+
+    <!-- MODAL POPUP PARA SA REVIEW ALL LOGS -->
+    <dialog id="modal-all-logs" style="padding: 20px; border-radius: 8px; border: 1px solid #444; background: #1e1e2e; color: #fff; max-width: 600px; width: 90%;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <h3 style="margin: 0; font-size: 1.1rem;">All Saved Activity Logs (Database)</h3>
+            <button id="btn-close-modal" type="button" style="background: transparent; border: none; color: #fff; font-size: 1.2rem; cursor: pointer;">✕</button>
+        </div>
+        <div id="all-logs-content" style="max-height: 350px; overflow-y: auto; background: #11111b; padding: 12px; border-radius: 6px; font-family: monospace; white-space: pre-wrap; font-size: 0.85rem; border: 1px solid #333;">
+            Loading logs...
+        </div>
+    </dialog>
+
+    <script src="app.js"></script>
+
+    <!-- SCRIPT PARA SA SALES ANALYTICS GRAPH -->
+    <script>
+        let cachedSalesHistory = null;
+        let salesBarChart = null;
+
+        async function fetchAndInitSalesGraph() {
+            try {
+                const response = await fetch('/api/sales-history');
+                cachedSalesHistory = await response.json();
+                renderSalesChart('daily');
+            } catch (err) {
+                console.error('Failed to load sales history graph data:', err);
+            }
+        }
+
+        function renderSalesChart(type) {
+            if (!cachedSalesHistory) return;
+
+            const records = cachedSalesHistory[type] || [];
+            const labels = records.map(item => item.period);
+            const values = records.map(item => item.total);
+
+            const canvasCtx = document.getElementById('salesAnalyticsChart').getContext('2d');
+
+            if (salesBarChart) {
+                salesBarChart.destroy();
+            }
+
+            salesBarChart = new Chart(canvasCtx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: `${type.toUpperCase()} Sales (₱)`,
+                        data: values,
+                        backgroundColor: '#0ea5e9',
+                        borderRadius: 4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchAndInitSalesGraph();
+        });
+    </script>
+</body>
+</html>
