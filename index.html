@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -8,6 +9,7 @@
     <!-- Chart.js Library -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
+
 <body>
     <div id="app-shell" class="app-shell">
         <header class="topbar">
@@ -29,7 +31,7 @@
         <main class="dashboard-container">
             <!-- ================= OWNER DASHBOARD ================= -->
             <section id="owner-dashboard" class="dashboard-card hidden owner-monitor-card">
-                
+
                 <div class="dashboard-heading">
                     <p class="eyebrow">AquaSync System</p>
                     <h2 style="font-size: 1.8rem; letter-spacing: 1px;">OWNER WORKPLACE</h2>
@@ -45,19 +47,23 @@
                 <div class="owner-stats-grid">
                     <label class="owner-stat-card">
                         <span class="stat-label">Total Cash Today (₱)</span>
-                        <input id="input-stat-revenue" type="number" value="1200" data-stat="revenue" min="0" oninput="if(this.value < 0) this.value = 0;">
+                        <input id="input-stat-revenue" type="number" value="1200" data-stat="revenue" min="0"
+                            oninput="if(this.value < 0) this.value = 0;">
                     </label>
                     <label class="owner-stat-card owner-highlight-card">
                         <span class="stat-label">Remaining Tank Water (liters)</span>
-                        <input id="input-stat-water" type="number" value="1232" data-stat="water" min="0" oninput="if(this.value < 0) this.value = 0;">
+                        <input id="input-stat-water" type="number" value="1232" data-stat="water" min="0"
+                            oninput="if(this.value < 0) this.value = 0;">
                     </label>
                     <label class="owner-stat-card">
                         <span class="stat-label">Empty Jug Shells (in shop)</span>
-                        <input id="input-stat-containers" type="number" value="65" data-stat="containers" min="0" oninput="if(this.value < 0) this.value = 0;">
+                        <input id="input-stat-containers" type="number" value="65" data-stat="containers" min="0"
+                            oninput="if(this.value < 0) this.value = 0;">
                     </label>
                     <label class="owner-stat-card">
                         <span class="stat-label">Borrowed Jugs (out with clients)</span>
-                        <input id="input-stat-borrowed" type="number" value="112" data-stat="borrowed" min="0" oninput="if(this.value < 0) this.value = 0;">
+                        <input id="input-stat-borrowed" type="number" value="112" data-stat="borrowed" min="0"
+                            oninput="if(this.value < 0) this.value = 0;">
                     </label>
                 </div>
 
@@ -69,7 +75,8 @@
 
                 <div class="owner-sales-panel">
                     <div class="owner-summary-header">
-                        <div class="sales-title" style="font-size: 1.4rem; font-weight: bold; color: #38bdf8;">SALES SUMMARY</div>
+                        <div class="sales-title" style="font-size: 1.4rem; font-weight: bold; color: #38bdf8;">SALES
+                            SUMMARY</div>
                         <div class="summary-controls">
                             <input id="owner-summary-date" type="date" class="summary-date-picker">
                             <button id="btn-refresh-sales" class="secondary-btn" type="button">Refresh</button>
@@ -100,9 +107,12 @@
                     <div class="owner-summary-header">
                         <div class="sales-title">Sales Analytics Graph</div>
                         <div class="summary-controls">
-                            <button type="button" class="secondary-btn" onclick="renderSalesChart('daily')">Daily</button>
-                            <button type="button" class="secondary-btn" onclick="renderSalesChart('monthly')">Monthly</button>
-                            <button type="button" class="secondary-btn" onclick="renderSalesChart('yearly')">Yearly</button>
+                            <button type="button" class="secondary-btn"
+                                onclick="renderSalesChart('daily')">Daily</button>
+                            <button type="button" class="secondary-btn"
+                                onclick="renderSalesChart('monthly')">Monthly</button>
+                            <button type="button" class="secondary-btn"
+                                onclick="renderSalesChart('yearly')">Yearly</button>
                         </div>
                     </div>
                     <div class="chart-wrapper">
@@ -113,11 +123,14 @@
                 <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.15); margin: 30px 0;">
 
                 <div class="activity-logs-section">
-                    <div class="sales-title" style="font-size: 1.4rem; font-weight: bold; color: #38bdf8; margin-bottom: 15px;">ACTIVITY LOGS</div>
+                    <div class="sales-title"
+                        style="font-size: 1.4rem; font-weight: bold; color: #38bdf8; margin-bottom: 15px;">ACTIVITY LOGS
+                    </div>
 
                     <div class="activity-log-card" style="margin-bottom: 15px;">
                         <div class="log-heading">SIMPLIFIED ACTIVITY LOG:</div>
-                        <textarea id="owner-activity-log" readonly style="width: 100%; height: 120px; font-family: monospace;">System ready. Monitoring staff activity...</textarea>
+                        <textarea id="owner-activity-log" readonly
+                            style="width: 100%; height: 120px; font-family: monospace;">System ready. Monitoring staff activity...</textarea>
                     </div>
 
                     <div style="margin-bottom: 20px;">
@@ -149,7 +162,8 @@
                     <p class="eyebrow">Staff POS Simulator</p>
                     <h2>Step 1: Select Current Shop Activity</h2>
                     <p>Choose the appropriate action and confirm the order.</p>
-                    <button id="btn-staff-profile" class="secondary-btn" type="button" style="margin-top: 10px; float: right;">👤 My Profile</button>
+                    <button id="btn-staff-profile" class="secondary-btn" type="button"
+                        style="margin-top: 10px; float: right;">👤 My Profile</button>
                 </div>
 
                 <div class="pos-section">
@@ -161,7 +175,8 @@
                                 <span class="action-price">₱20.00</span>
                             </div>
                             <div class="action-card-body">
-                                <input type="number" class="action-qty" placeholder="Qty" min="0" oninput="if(this.value < 0) this.value = 0;">
+                                <input type="number" class="action-qty" placeholder="Qty" min="0"
+                                    oninput="if(this.value < 0) this.value = 0;">
                                 <button type="button" class="action-set-btn">Set Qty</button>
                             </div>
                         </article>
@@ -171,7 +186,8 @@
                                 <span class="action-price">₱225.00</span>
                             </div>
                             <div class="action-card-body">
-                                <input type="number" class="action-qty" placeholder="Qty" min="0" oninput="if(this.value < 0) this.value = 0;">
+                                <input type="number" class="action-qty" placeholder="Qty" min="0"
+                                    oninput="if(this.value < 0) this.value = 0;">
                                 <button type="button" class="action-set-btn">Set Qty</button>
                             </div>
                         </article>
@@ -187,7 +203,8 @@
                                 <span class="action-meta">₱25.00 each (₱20 refill + ₱5 delivery fee)</span>
                             </div>
                             <div class="action-card-body">
-                                <input type="number" class="action-qty" placeholder="Qty" min="0" oninput="if(this.value < 0) this.value = 0;">
+                                <input type="number" class="action-qty" placeholder="Qty" min="0"
+                                    oninput="if(this.value < 0) this.value = 0;">
                                 <button type="button" class="action-set-btn">Set Qty</button>
                             </div>
                         </article>
@@ -197,7 +214,8 @@
                                 <span class="action-meta">Rider returns empty shells to shop</span>
                             </div>
                             <div class="action-card-body">
-                                <input type="number" class="action-qty" placeholder="Qty" min="0" oninput="if(this.value < 0) this.value = 0;">
+                                <input type="number" class="action-qty" placeholder="Qty" min="0"
+                                    oninput="if(this.value < 0) this.value = 0;">
                                 <button type="button" class="action-set-btn">Set Qty</button>
                             </div>
                         </article>
@@ -232,7 +250,8 @@
                     <div class="step-pill">2</div>
                     <div>
                         <div class="summary-label">Step 2: Double-check action details</div>
-                        <div class="summary-value" id="staged-action-text">👉 Staged Action: 12 Walk-in Refill(s) (Customer pays ₱240)</div>
+                        <div class="summary-value" id="staged-action-text">👉 Staged Action: 12 Walk-in Refill(s)
+                            (Customer pays ₱240)</div>
                     </div>
                 </div>
 
@@ -274,7 +293,8 @@
                     </div>
                 </div>
 
-                <button type="submit" id="btn-auth-submit" class="primary-btn auth-submit-btn">Access System Terminal</button>
+                <button type="submit" id="btn-auth-submit" class="primary-btn auth-submit-btn">Access System
+                    Terminal</button>
             </form>
 
             <div class="auth-footer">
@@ -286,19 +306,25 @@
     </div>
 
     <!-- MODAL PARA SA STAFF MANAGEMENT -->
-    <dialog id="modal-staff-management" style="padding: 20px; border-radius: 8px; border: 1px solid #444; background: #1e1e2e; color: #fff; max-width: 700px; width: 95%;">
+    <dialog id="modal-staff-management"
+        style="padding: 20px; border-radius: 8px; border: 1px solid #444; background: #1e1e2e; color: #fff; max-width: 700px; width: 95%;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
             <h3 style="margin: 0; font-size: 1.1rem;">👥 Staff Account Management</h3>
-            <button id="btn-close-staff-modal" type="button" style="background: transparent; border: none; color: #fff; font-size: 1.2rem; cursor: pointer;">✕</button>
+            <button id="btn-close-staff-modal" type="button"
+                style="background: transparent; border: none; color: #fff; font-size: 1.2rem; cursor: pointer;">✕</button>
         </div>
-        
+
         <!-- Create Staff Section -->
-        <div style="background: #11111b; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #333;">
+        <div
+            style="background: #11111b; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #333;">
             <h4 style="margin-top: 0; color: #38bdf8;">Create New Staff Account</h4>
             <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                <input id="staff-create-username" type="text" placeholder="Username" style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff;">
-                <input id="staff-create-password" type="password" placeholder="Password" style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff;">
-                <button id="btn-create-staff" class="primary-btn" type="button" style="padding: 8px 16px;">Create</button>
+                <input id="staff-create-username" type="text" placeholder="Username"
+                    style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff;">
+                <input id="staff-create-password" type="password" placeholder="Password"
+                    style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff;">
+                <button id="btn-create-staff" class="primary-btn" type="button"
+                    style="padding: 8px 16px;">Create</button>
             </div>
             <div id="staff-create-status" style="color: #38bdf8; font-size: 0.9rem;"></div>
         </div>
@@ -313,20 +339,25 @@
     </dialog>
 
     <!-- MODAL PARA SA STAFF PROFILE -->
-    <dialog id="modal-staff-profile" style="padding: 20px; border-radius: 8px; border: 1px solid #444; background: #1e1e2e; color: #fff; max-width: 600px; width: 95%;">
+    <dialog id="modal-staff-profile"
+        style="padding: 20px; border-radius: 8px; border: 1px solid #444; background: #1e1e2e; color: #fff; max-width: 600px; width: 95%;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
             <h3 style="margin: 0; font-size: 1.1rem;">👤 My Profile</h3>
-            <button id="btn-close-profile-modal" type="button" style="background: transparent; border: none; color: #fff; font-size: 1.2rem; cursor: pointer;">✕</button>
+            <button id="btn-close-profile-modal" type="button"
+                style="background: transparent; border: none; color: #fff; font-size: 1.2rem; cursor: pointer;">✕</button>
         </div>
-        
+
         <!-- Profile Photo Section -->
-        <div style="background: #11111b; padding: 15px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #333; text-align: center;">
+        <div
+            style="background: #11111b; padding: 15px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #333; text-align: center;">
             <h4 style="margin-top: 0; color: #38bdf8;">Profile Photo</h4>
-            <div id="staff-photo-display" style="width: 120px; height: 120px; margin: 0 auto 15px; border-radius: 8px; background: #222; border: 2px solid #38bdf8; display: flex; align-items: center; justify-content: center; color: #666; font-size: 3rem; overflow: hidden;">
+            <div id="staff-photo-display"
+                style="width: 120px; height: 120px; margin: 0 auto 15px; border-radius: 8px; background: #222; border: 2px solid #38bdf8; display: flex; align-items: center; justify-content: center; color: #666; font-size: 3rem; overflow: hidden;">
                 📷
             </div>
             <input id="staff-photo-input" type="file" accept="image/*" style="margin-bottom: 10px;">
-            <button id="btn-upload-photo" class="primary-btn" type="button" style="padding: 8px 16px;">Upload Photo</button>
+            <button id="btn-upload-photo" class="primary-btn" type="button" style="padding: 8px 16px;">Upload
+                Photo</button>
             <div id="staff-photo-status" style="color: #38bdf8; font-size: 0.9rem; margin-top: 10px;"></div>
         </div>
 
@@ -334,22 +365,29 @@
         <div style="background: #11111b; padding: 15px; border-radius: 6px; border: 1px solid #333;">
             <h4 style="margin-top: 0; color: #38bdf8;">Change Password</h4>
             <div style="display: flex; flex-direction: column; gap: 10px;">
-                <input id="staff-old-password" type="password" placeholder="Current Password" style="padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff;">
-                <input id="staff-new-password" type="password" placeholder="New Password" style="padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff;">
-                <input id="staff-confirm-password" type="password" placeholder="Confirm New Password" style="padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff;">
-                <button id="btn-change-password" class="primary-btn" type="button" style="padding: 8px 16px;">Change Password</button>
+                <input id="staff-old-password" type="password" placeholder="Current Password"
+                    style="padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff;">
+                <input id="staff-new-password" type="password" placeholder="New Password"
+                    style="padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff;">
+                <input id="staff-confirm-password" type="password" placeholder="Confirm New Password"
+                    style="padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff;">
+                <button id="btn-change-password" class="primary-btn" type="button" style="padding: 8px 16px;">Change
+                    Password</button>
             </div>
             <div id="staff-password-status" style="color: #38bdf8; font-size: 0.9rem; margin-top: 10px;"></div>
         </div>
     </dialog>
 
     <!-- MODAL POPUP PARA SA REVIEW ALL LOGS -->
-    <dialog id="modal-all-logs" style="padding: 20px; border-radius: 8px; border: 1px solid #444; background: #1e1e2e; color: #fff; max-width: 600px; width: 90%;">
+    <dialog id="modal-all-logs"
+        style="padding: 20px; border-radius: 8px; border: 1px solid #444; background: #1e1e2e; color: #fff; max-width: 600px; width: 90%;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
             <h3 style="margin: 0; font-size: 1.1rem;">All Saved Activity Logs (Database)</h3>
-            <button id="btn-close-modal" type="button" style="background: transparent; border: none; color: #fff; font-size: 1.2rem; cursor: pointer;">✕</button>
+            <button id="btn-close-modal" type="button"
+                style="background: transparent; border: none; color: #fff; font-size: 1.2rem; cursor: pointer;">✕</button>
         </div>
-        <div id="all-logs-content" style="max-height: 350px; overflow-y: auto; background: #11111b; padding: 12px; border-radius: 6px; font-family: monospace; white-space: pre-wrap; font-size: 0.85rem; border: 1px solid #333;">
+        <div id="all-logs-content"
+            style="max-height: 350px; overflow-y: auto; background: #11111b; padding: 12px; border-radius: 6px; font-family: monospace; white-space: pre-wrap; font-size: 0.85rem; border: 1px solid #333;">
             Loading logs...
         </div>
     </dialog>
@@ -411,4 +449,5 @@
         });
     </script>
 </body>
+
 </html>
