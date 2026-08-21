@@ -17,6 +17,13 @@
     --button-danger: #dc2626;
     --shadow: 0 20px 45px rgba(2, 6, 23, 0.3);
     --card-bg: rgba(15, 23, 42, 0.9);
+    
+    /* Theme specific variables */
+    --summary-val: #c7d2fe;
+    --pos-card-bg: radial-gradient(circle at top left, rgba(59, 130, 246, 0.16), transparent 25%),
+                   linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.98));
+    --shell-bg: linear-gradient(135deg, rgba(14, 116, 144, 0.14), rgba(30, 41, 59, 0.9));
+    --eyebrow: #67e8f9;
 }
 
 *, *::before, *::after {
@@ -47,6 +54,13 @@ body.theme-light {
     --button-danger: #dc2626;
     --shadow: 0 20px 45px rgba(148, 163, 184, 0.16);
     --card-bg: rgba(255, 255, 255, 0.95);
+
+    /* Theme specific variables for light mode */
+    --summary-val: #4f46e5;
+    --pos-card-bg: radial-gradient(circle at top left, rgba(14, 165, 233, 0.15), transparent 25%),
+                   linear-gradient(180deg, rgba(255, 255, 255, 0.95), rgba(255, 255, 255, 0.98));
+    --shell-bg: linear-gradient(135deg, rgba(14, 165, 233, 0.05), rgba(226, 232, 240, 0.8));
+    --eyebrow: #0284c7;
 }
 
 body.theme-dark {
@@ -65,6 +79,13 @@ body.theme-dark {
     --button-danger: #dc2626;
     --shadow: 0 20px 45px rgba(2, 6, 23, 0.3);
     --card-bg: rgba(15, 23, 42, 0.9);
+
+    /* Theme specific variables for dark mode */
+    --summary-val: #c7d2fe;
+    --pos-card-bg: radial-gradient(circle at top left, rgba(59, 130, 246, 0.16), transparent 25%),
+                   linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.98));
+    --shell-bg: linear-gradient(135deg, rgba(14, 116, 144, 0.14), rgba(30, 41, 59, 0.9));
+    --eyebrow: #67e8f9;
 }
 
 button, input, textarea {
@@ -79,7 +100,7 @@ button, input, textarea {
 .app-shell {
     min-height: 100vh;
     padding: 24px;
-    background: linear-gradient(135deg, rgba(14, 116, 144, 0.14), rgba(30, 41, 59, 0.9));
+    background: var(--shell-bg);
     overflow-x: hidden;
 }
 
@@ -210,7 +231,7 @@ button, input, textarea {
     font-size: 0.78rem;
     letter-spacing: 0.24em;
     text-transform: uppercase;
-    color: #67e8f9;
+    color: var(--eyebrow);
 }
 
 .stats-grid {
@@ -225,22 +246,22 @@ button, input, textarea {
     flex-direction: column;
     gap: 8px;
     padding: 16px;
-    border: 1px solid rgba(148, 163, 184, 0.18);
+    border: 1px solid var(--panel-border);
     border-radius: 16px;
-    background: rgba(2, 6, 23, 0.45);
+    background: var(--surface);
 }
 
 .stat-card span {
     font-size: 0.82rem;
     text-transform: uppercase;
     letter-spacing: 0.16em;
-    color: #94a3b8;
+    color: var(--text-secondary);
 }
 
 .stat-card input,
 .stat-card strong {
     font-size: 1.2rem;
-    color: #f8fafc;
+    color: var(--text-primary);
     font-weight: 700;
 }
 
@@ -248,9 +269,9 @@ button, input, textarea {
     width: 100%;
     padding: 10px 12px;
     border-radius: 10px;
-    border: 1px solid rgba(148, 163, 184, 0.2);
-    background: #0f172a;
-    color: #f8fafc;
+    border: 1px solid var(--panel-border);
+    background: var(--bg);
+    color: var(--text-primary);
 }
 
 .dashboard-actions {
@@ -307,8 +328,8 @@ button, input, textarea {
     min-height: 150px;
     padding: 22px;
     gap: 14px;
-    background: rgba(15, 23, 42, 0.88);
-    border: 1px solid rgba(148, 163, 184, 0.16);
+    background: var(--surface);
+    border: 1px solid var(--panel-border);
 }
 
 .owner-stat-card strong,
@@ -324,8 +345,8 @@ button, input, textarea {
     margin-top: 18px;
     padding: 24px;
     border-radius: 26px;
-    background: rgba(15, 23, 42, 0.94);
-    border: 1px solid rgba(148, 163, 184, 0.16);
+    background: var(--surface);
+    border: 1px solid var(--panel-border);
 }
 
 .owner-summary-header {
@@ -337,9 +358,9 @@ button, input, textarea {
 }
 
 .sales-title {
-    font-size: 1rem;
-    font-weight: 800;
-    color: #e2e8f0;
+    font-size: 1.4rem;
+    font-weight: bold;
+    color: var(--button-accent);
 }
 
 .summary-controls {
@@ -351,9 +372,9 @@ button, input, textarea {
 .summary-date-picker {
     padding: 12px 14px;
     border-radius: 14px;
-    border: 1px solid rgba(148, 163, 184, 0.2);
-    background: #0f172a;
-    color: #f8fafc;
+    border: 1px solid var(--panel-border);
+    background: var(--bg);
+    color: var(--text-primary);
 }
 
 .sales-summary-grid {
@@ -368,8 +389,8 @@ button, input, textarea {
     min-height: 120px;
     padding: 18px;
     border-radius: 20px;
-    background: rgba(2, 6, 23, 0.88);
-    border: 1px solid rgba(148, 163, 184, 0.16);
+    background: var(--surface);
+    border: 1px solid var(--panel-border);
 }
 
 .summary-card strong {
@@ -377,14 +398,14 @@ button, input, textarea {
 }
 
 .summary-card span {
-    color: #94a3b8;
+    color: var(--text-secondary);
     font-size: 0.82rem;
     text-transform: uppercase;
     letter-spacing: 0.14em;
 }
 
 .summary-card strong {
-    color: #c7d2fe;
+    color: var(--summary-val);
     font-size: 1.35rem;
     font-weight: 800;
 }
@@ -415,14 +436,14 @@ button, input, textarea {
     gap: 16px;
     padding: 18px;
     border-radius: 22px;
-    background: rgba(15, 23, 42, 0.88);
-    border: 1px solid rgba(148, 163, 184, 0.14);
+    background: var(--surface);
+    border: 1px solid var(--panel-border);
 }
 
 .histogram-card-title {
     font-size: 0.96rem;
     font-weight: 700;
-    color: #c7d2fe;
+    color: var(--text-primary);
 }
 
 .chart-bars {
@@ -449,12 +470,12 @@ button, input, textarea {
 
 .chart-value {
     font-size: 0.75rem;
-    color: #cbd5e1;
+    color: var(--text-muted);
 }
 
 .chart-label {
     font-size: 0.68rem;
-    color: #94a3b8;
+    color: var(--text-secondary);
     text-align: center;
     line-height: 1.2;
 }
@@ -463,8 +484,8 @@ button, input, textarea {
     display: grid;
     padding: 20px;
     border-radius: 20px;
-    border: 1px solid rgba(148, 163, 184, 0.14);
-    background: rgba(15, 23, 42, 0.86);
+    border: 1px solid var(--panel-border);
+    background: var(--surface);
     gap: 10px;
 }
 
@@ -479,16 +500,16 @@ button, input, textarea {
     font-size: 0.82rem;
     text-transform: uppercase;
     letter-spacing: 0.14em;
-    color: #94a3b8;
+    color: var(--text-secondary);
 }
 
 .owner-stat-card input {
     width: 100%;
     padding: 16px 18px;
     border-radius: 16px;
-    border: 1px solid rgba(148, 163, 184, 0.18);
-    background: #0f172a;
-    color: #f8fafc;
+    border: 1px solid var(--panel-border);
+    background: var(--bg);
+    color: var(--text-primary);
     font-size: 1.4rem;
     font-weight: 700;
 }
@@ -497,15 +518,15 @@ button, input, textarea {
     margin-top: 8px;
     padding: 18px;
     border-radius: 20px;
-    border: 1px solid rgba(148, 163, 184, 0.14);
-    background: rgba(15, 23, 42, 0.88);
+    border: 1px solid var(--panel-border);
+    background: var(--surface);
 }
 
 .log-heading {
     margin: 0 0 12px;
     font-size: 0.78rem;
     font-weight: 700;
-    color: #94a3b8;
+    color: var(--text-secondary);
     letter-spacing: 0.14em;
     text-transform: uppercase;
 }
@@ -515,10 +536,10 @@ button, input, textarea {
     min-height: 160px;
     max-width: 100%;
     border-radius: 16px;
-    border: 1px solid rgba(148, 163, 184, 0.16);
+    border: 1px solid var(--panel-border);
     padding: 16px;
-    background: #020617;
-    color: #d1d5db;
+    background: var(--bg);
+    color: var(--text-primary);
     font-family: Consolas, Monaco, Menlo, monospace;
     font-size: 0.95rem;
     resize: none;
@@ -532,8 +553,8 @@ button, input, textarea {
     margin-top: 18px;
     padding: 20px;
     border-radius: 24px;
-    background: rgba(15, 23, 42, 0.92);
-    border: 1px solid rgba(148, 163, 184, 0.16);
+    background: var(--surface);
+    border: 1px solid var(--panel-border);
     overflow: hidden;
     min-width: 0;
 }
@@ -549,10 +570,10 @@ button, input, textarea {
     width: 100%;
     min-height: 120px;
     border-radius: 18px;
-    border: 1px solid rgba(148, 163, 184, 0.16);
+    border: 1px solid var(--panel-border);
     padding: 16px;
-    background: #020617;
-    color: #d1d5db;
+    background: var(--bg);
+    color: var(--text-primary);
     font-family: inherit;
     font-size: 0.95rem;
     resize: vertical;
@@ -573,24 +594,30 @@ button, input, textarea {
 .review-item {
     padding: 16px;
     border-radius: 18px;
-    background: rgba(2, 6, 23, 0.85);
-    border: 1px solid rgba(148, 163, 184, 0.16);
+    background: var(--bg);
+    border: 1px solid var(--panel-border);
     word-break: break-word;
     overflow-wrap: anywhere;
 }
 
 .review-date {
     font-size: 0.82rem;
-    color: #94a3b8;
+    color: var(--text-secondary);
     margin-bottom: 8px;
 }
 
 .review-details {
     font-size: 0.92rem;
-    color: #cbd5e1;
+    color: var(--text-primary);
     line-height: 1.5;
     overflow-wrap: anywhere;
     white-space: pre-wrap;
+}
+
+.review-heading {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--text-primary);
 }
 
 .owner-review-panel {
@@ -683,8 +710,7 @@ button, input, textarea {
 }
 
 .staff-pos-card {
-    background: radial-gradient(circle at top left, rgba(59, 130, 246, 0.16), transparent 25%),
-                linear-gradient(180deg, rgba(15, 23, 42, 0.95), rgba(15, 23, 42, 0.98));
+    background: var(--pos-card-bg);
 }
 
 .pos-section {
@@ -695,7 +721,7 @@ button, input, textarea {
     display: inline-flex;
     align-items: center;
     gap: 10px;
-    color: #7dd3fc;
+    color: var(--button-accent);
     font-size: 0.95rem;
     margin-bottom: 14px;
     text-transform: uppercase;
@@ -715,8 +741,8 @@ button, input, textarea {
     gap: 14px;
     padding: 18px;
     border-radius: 22px;
-    border: 1px solid rgba(96, 165, 250, 0.14);
-    background: rgba(15, 23, 42, 0.86);
+    border: 1px solid var(--panel-border);
+    background: var(--surface);
     min-width: 0;
 }
 
@@ -738,7 +764,7 @@ button, input, textarea {
 
 .action-price,
 .action-meta {
-    color: #67e8f9;
+    color: var(--button-accent);
     font-size: 0.92rem;
 }
 
@@ -753,9 +779,9 @@ button, input, textarea {
     width: 100%;
     padding: 12px 14px;
     border-radius: 14px;
-    border: 1px solid rgba(148, 163, 184, 0.18);
-    background: #0f172a;
-    color: #f8fafc;
+    border: 1px solid var(--panel-border);
+    background: var(--bg);
+    color: var(--text-primary);
 }
 
 .action-set-btn {
@@ -774,8 +800,8 @@ button, input, textarea {
     padding: 20px;
     margin-top: 20px;
     border-radius: 22px;
-    border: 1px solid rgba(56, 189, 248, 0.14);
-    background: rgba(15, 23, 42, 0.88);
+    border: 1px solid var(--panel-border);
+    background: var(--surface);
 }
 
 .step-pill {
@@ -799,7 +825,7 @@ button, input, textarea {
 
 .summary-value {
     font-size: 1.05rem;
-    color: #e2e8f0;
+    color: var(--text-primary);
 }
 
 .confirm-section {
@@ -812,8 +838,8 @@ button, input, textarea {
     padding: 14px 18px;
     border-radius: 16px;
     border: none;
-    background: #22d3ee;
-    color: #020617;
+    background: var(--button-primary);
+    color: var(--bg-alt);
     font-weight: 800;
     font-size: 0.95rem;
 }
@@ -832,9 +858,9 @@ button, input, textarea {
     width: min(100%, 460px);
     padding: 28px;
     border-radius: 24px;
-    background: rgba(15, 23, 42, 0.95);
-    border: 1px solid rgba(148, 163, 184, 0.2);
-    box-shadow: 0 30px 60px rgba(2, 6, 23, 0.42);
+    background: var(--card-bg);
+    border: 1px solid var(--panel-border);
+    box-shadow: var(--shadow);
 }
 
 .role-switcher {
@@ -843,14 +869,14 @@ button, input, textarea {
     gap: 8px;
     padding: 6px;
     border-radius: 999px;
-    background: rgba(2, 6, 23, 0.8);
+    background: var(--bg);
     margin-bottom: 20px;
 }
 
 .role-btn {
     padding: 10px 12px;
     border-radius: 999px;
-    color: #cbd5e1;
+    color: var(--text-secondary);
     background: transparent;
     font-weight: 700;
 }
@@ -945,7 +971,7 @@ button, input, textarea {
     margin-top: 10px;
     text-align: center;
     font-size: 0.92rem;
-    color: #f8fafc;
+    color: var(--text-primary);
 }
 
 .auth-status.error {
@@ -971,10 +997,10 @@ button, input, textarea {
     max-width: 320px;
     padding: 12px 16px;
     border-radius: 14px;
-    background: rgba(15, 23, 42, 0.95);
-    color: #f8fafc;
-    border: 1px solid rgba(148, 163, 184, 0.2);
-    box-shadow: 0 20px 40px rgba(2, 6, 23, 0.35);
+    background: var(--card-bg);
+    color: var(--text-primary);
+    border: 1px solid var(--panel-border);
+    box-shadow: var(--shadow);
     opacity: 1;
     transform: translateX(0);
     transition: opacity 0.25s ease, transform 0.25s ease;
@@ -1163,7 +1189,7 @@ button, input, textarea {
     border: 3px solid #38bdf8 !important;
     border-radius: 12px !important;
     padding: 25px !important;
-    background-color: #1e293b !important;
+    background: var(--card-bg) !important;
     max-width: 900px !important;
     margin: 0 auto !important;
 }
@@ -1177,12 +1203,151 @@ button, input, textarea {
 
 .owner-sales-panel,
 .activity-logs-section {
-    background-color: #0f172a !important;
-    border: 1px solid #334155 !important;
+    background-color: var(--bg-alt) !important;
+    border: 1px solid var(--panel-border) !important;
     border-radius: 8px !important;
     padding: 20px !important;
 }
 
 .hidden {
     display: none !important;
+}
+
+/* Custom Native Modal Dialog Styling */
+dialog.custom-modal {
+    padding: 24px;
+    border-radius: 20px;
+    border: 1px solid var(--panel-border);
+    background: var(--card-bg);
+    color: var(--text-primary);
+    max-width: 600px;
+    width: 90%;
+    box-shadow: var(--shadow);
+}
+
+dialog.custom-modal::backdrop {
+    background: rgba(2, 6, 23, 0.6);
+    backdrop-filter: blur(4px);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.modal-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.modal-close-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 1.4rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px;
+    transition: color 0.2s, transform 0.2s;
+}
+
+.modal-close-btn:hover {
+    color: var(--text-primary);
+    transform: scale(1.15);
+}
+
+.modal-section {
+    background: var(--surface);
+    border: 1px solid var(--panel-border);
+    border-radius: 16px;
+    padding: 18px;
+    margin-bottom: 20px;
+}
+
+.modal-section:last-of-type {
+    margin-bottom: 0;
+}
+
+.modal-section-title {
+    margin-top: 0;
+    margin-bottom: 12px;
+    color: var(--button-accent);
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.modal-input-row {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.modal-input-row input {
+    flex: 1;
+    min-width: 140px;
+}
+
+.modal-input-col {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.modal-input {
+    padding: 10px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--panel-border);
+    background: var(--bg);
+    color: var(--text-primary);
+    font-size: 0.95rem;
+    width: 100%;
+}
+
+.modal-input:focus {
+    outline: none;
+    border-color: var(--button-accent);
+    box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.2);
+}
+
+.modal-status-text {
+    color: var(--button-accent);
+    font-size: 0.9rem;
+}
+
+.modal-list-container {
+    max-height: 250px;
+    overflow-y: auto;
+}
+
+.modal-photo-display {
+    width: 120px;
+    height: 120px;
+    margin: 0 auto 15px;
+    border-radius: 12px;
+    background: var(--bg);
+    border: 2px solid var(--button-accent);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    overflow: hidden;
+}
+
+.modal-logs-content {
+    max-height: 350px;
+    overflow-y: auto;
+    background: var(--bg);
+    color: var(--text-primary);
+    padding: 16px;
+    border-radius: 12px;
+    font-family: Consolas, Monaco, Menlo, monospace;
+    white-space: pre-wrap;
+    font-size: 0.88rem;
+    border: 1px solid var(--panel-border);
+    line-height: 1.5;
 }
