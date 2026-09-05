@@ -17,7 +17,7 @@
                 <div class="brand-mark">A</div>
                 <div>
                     <h1>AquaSync Control</h1>
-                    <p>Separate owner and staff access</p>
+                    <p>Sales, inventory, and staff management</p>
                 </div>
             </div>
             <div class="topbar-actions">
@@ -32,54 +32,69 @@
             <!-- ================= OWNER DASHBOARD ================= -->
             <section id="owner-dashboard" class="dashboard-card hidden owner-monitor-card">
 
-                <div class="dashboard-heading">
-                    <p class="eyebrow">AquaSync System</p>
-                    <h2 style="font-size: 1.8rem; letter-spacing: 1px;">OWNER WORKPLACE</h2>
-                    <p>Type directly inside any field to manually overwrite or set values to 0.</p>
+                <div class="dashboard-brand">
+                    <div class="brand-mark">A</div>
+                    <div>
+                        <h1>AquaSync Control</h1>
+                        <p>Sales, inventory, and staff management</p>
+                    </div>
                 </div>
 
-                <div class="owner-actions-row">
-                    <button id="btn-owner-undo" class="secondary-btn" type="button" disabled>UNDO ACTION</button>
-                    <button id="btn-owner-reset" class="danger-btn" type="button">RESET TO ZERO</button>
-                    <button id="btn-manage-staff" class="secondary-btn" type="button">👥 Manage Staff</button>
+                <nav class="dashboard-menu" aria-label="Owner dashboard menu">
+                    <div class="menu-heading">Owner menu</div>
+                    <button type="button" class="menu-item active" data-owner-section="overview">Overview</button>
+                    <button type="button" class="menu-item" data-owner-section="sales">Sales</button>
+                    <button type="button" class="menu-item" data-owner-section="activity">Activity history</button>
+                    <button type="button" class="menu-item" data-owner-section="staff">Manage staff</button>
+                </nav>
+
+                <div id="owner-overview-section" class="dashboard-heading owner-menu-section" data-owner-section-content="overview">
+                    <p class="eyebrow">Owner dashboard</p>
+                    <h2 style="font-size: 1.8rem; letter-spacing: 1px;">Today's business overview</h2>
+                    <p>Update the numbers below, then select <strong>Save changes</strong>. Use reset only when you want to set every value to zero.</p>
                 </div>
 
-                <div class="owner-stats-grid">
+                <div class="owner-actions-row owner-menu-section" data-owner-section-content="overview">
+                    <button id="btn-owner-undo" class="secondary-btn" type="button" disabled>Undo last change</button>
+                    <button id="btn-owner-reset" class="danger-btn" type="button">Reset all values</button>
+                    <button id="btn-manage-staff" class="secondary-btn" type="button">👥 Manage staff</button>
+                </div>
+
+                <div class="owner-stats-grid owner-menu-section" data-owner-section-content="overview">
                     <label class="owner-stat-card">
-                        <span class="stat-label">Total Cash Today (₱)</span>
+                        <span class="stat-label">Cash collected today (₱)</span>
                         <input id="input-stat-revenue" type="number" value="1200" data-stat="revenue" min="0"
                             oninput="if(this.value < 0) this.value = 0;">
                     </label>
                     <label class="owner-stat-card owner-highlight-card">
-                        <span class="stat-label">Remaining Tank Water (liters)</span>
+                        <span class="stat-label">Water remaining (liters)</span>
                         <input id="input-stat-water" type="number" value="1232" data-stat="water" min="0"
                             oninput="if(this.value < 0) this.value = 0;">
                     </label>
                     <label class="owner-stat-card">
-                        <span class="stat-label">Empty Jug Shells (in shop)</span>
+                        <span class="stat-label">Empty jugs in shop</span>
                         <input id="input-stat-containers" type="number" value="65" data-stat="containers" min="0"
                             oninput="if(this.value < 0) this.value = 0;">
                     </label>
                     <label class="owner-stat-card">
-                        <span class="stat-label">Borrowed Jugs (out with clients)</span>
+                        <span class="stat-label">Jugs with customers</span>
                         <input id="input-stat-borrowed" type="number" value="112" data-stat="borrowed" min="0"
                             oninput="if(this.value < 0) this.value = 0;">
                     </label>
                 </div>
 
-                <div class="dashboard-actions" style="margin-bottom: 25px;">
-                    <button id="btn-save-owner" class="primary-btn" type="button">Save Owner Changes</button>
+                <div class="dashboard-actions owner-menu-section" data-owner-section-content="overview" style="margin-bottom: 25px;">
+                    <button id="btn-save-owner" class="primary-btn" type="button">Save changes</button>
                 </div>
 
                 <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.15); margin: 30px 0;">
 
-                <div class="owner-sales-panel">
+                <div class="owner-sales-panel owner-menu-section" data-owner-section-content="sales">
                     <div class="owner-summary-header">
-                        <div class="sales-title" style="font-size: 1.4rem; font-weight: bold; color: #38bdf8;">SALES
-                            SUMMARY</div>
+                        <div class="sales-title" style="font-size: 1.4rem; font-weight: bold; color: #38bdf8;">Sales summary</div>
                         <div class="summary-controls">
                             <input id="owner-summary-date" type="date" class="summary-date-picker">
-                            <button id="btn-refresh-sales" class="secondary-btn" type="button">Refresh</button>
+                            <button id="btn-refresh-sales" class="secondary-btn" type="button">Refresh data</button>
                         </div>
                     </div>
                     <div class="sales-summary-grid">
@@ -103,9 +118,9 @@
                 </div>
 
                 <!-- Sales Analytics Graph -->
-                <div class="owner-sales-panel" style="margin-top: 20px;">
+                <div class="owner-sales-panel owner-menu-section" data-owner-section-content="sales" style="margin-top: 20px;">
                     <div class="owner-summary-header">
-                        <div class="sales-title">Sales Analytics Graph</div>
+                        <div class="sales-title">Sales trend</div>
                         <div class="summary-controls">
                             <button type="button" class="secondary-btn"
                                 onclick="renderSalesChart('daily')">Daily</button>
@@ -122,28 +137,28 @@
 
                 <hr style="border: 0; border-top: 1px solid rgba(255,255,255,0.15); margin: 30px 0;">
 
-                <div class="activity-logs-section">
+                <div class="activity-logs-section owner-menu-section" data-owner-section-content="activity">
                     <div class="sales-title"
-                        style="font-size: 1.4rem; font-weight: bold; color: #38bdf8; margin-bottom: 15px;">ACTIVITY LOGS
+                        style="font-size: 1.4rem; font-weight: bold; color: #38bdf8; margin-bottom: 15px;">Activity history
                     </div>
 
                     <div class="activity-log-card" style="margin-bottom: 15px;">
-                        <div class="log-heading">SIMPLIFIED ACTIVITY LOG:</div>
+                        <div class="log-heading">Recent staff activity</div>
                         <textarea id="owner-activity-log" readonly
                             style="width: 100%; height: 120px; font-family: monospace;">System ready. Monitoring staff activity...</textarea>
                     </div>
 
                     <div style="margin-bottom: 20px;">
-                        <button id="btn-save-activity" class="secondary-btn" type="button">Save Activity Log</button>
+                        <button id="btn-save-activity" class="secondary-btn" type="button">Save activity history</button>
                     </div>
 
                     <div id="owner-monitor-status" class="owner-status"></div>
 
                     <div class="owner-review-panel">
                         <div class="review-header-row">
-                            <div class="review-heading" style="margin: 0;">Saved Activity Review</div>
+                            <div class="review-heading" style="margin: 0;">Saved activity records</div>
                             <button id="btn-review-all-logs" class="secondary-btn review-all-logs-btn" type="button">
-                                📋 Review All Logs
+                                📋 View all records
                             </button>
                         </div>
                         <div class="review-controls-row">
@@ -160,18 +175,18 @@
             <section id="staff-dashboard" class="dashboard-card hidden staff-pos-card">
                 <div class="dashboard-heading">
                     <p class="eyebrow">Staff POS Simulator</p>
-                    <h2>Step 1: Select Current Shop Activity</h2>
-                    <p>Choose the appropriate action and confirm the order.</p>
+                    <h2>Record a staff transaction</h2>
+                    <p>Choose what happened, enter the quantity, and save it. The inventory snapshot updates after a saved transaction.</p>
                     <button id="btn-staff-profile" class="secondary-btn" type="button"
                         style="margin-top: 10px; float: right;">👤 My Profile</button>
                 </div>
 
                 <div class="pos-section">
-                    <div class="pos-subtitle">🏪 Walk-in counter sales (manual entry)</div>
+                    <div class="pos-subtitle">🏪 1. Counter sales</div>
                     <div class="action-grid">
                         <article class="action-card active-action">
                             <div class="action-card-header">
-                                <span class="action-label">5-Gallon Water Refill</span>
+                                <span class="action-label">1-Gallon Water Refill</span>
                                 <span class="action-price">₱20.00</span>
                             </div>
                             <div class="action-card-body">
@@ -195,7 +210,7 @@
                 </div>
 
                 <div class="pos-section">
-                    <div class="pos-subtitle">🚚 Home delivery logistics (manual entry)</div>
+                    <div class="pos-subtitle">🚚 1. Delivery activity</div>
                     <div class="action-grid">
                         <article class="action-card">
                             <div class="action-card-header">
@@ -224,23 +239,23 @@
 
                 <div class="owner-sales-panel staff-summary-panel">
                     <div class="owner-summary-header">
-                        <div class="sales-title">Staff Inventory Snapshot</div>
+                        <div class="sales-title">Current inventory</div>
                     </div>
                     <div class="sales-summary-grid">
                         <article class="summary-card">
-                            <span>Cash Available</span>
+                            <span>Cash available</span>
                             <strong id="staff-revenue">₱0</strong>
                         </article>
                         <article class="summary-card">
-                            <span>Water Remaining</span>
+                            <span>Water remaining</span>
                             <strong id="staff-water">0 L</strong>
                         </article>
                         <article class="summary-card">
-                            <span>Jug Shells</span>
+                            <span>Empty jugs</span>
                             <strong id="staff-containers">0</strong>
                         </article>
                         <article class="summary-card">
-                            <span>Borrowed Jugs</span>
+                            <span>Jugs with customers</span>
                             <strong id="staff-borrowed">0</strong>
                         </article>
                     </div>
@@ -249,8 +264,8 @@
                 <div class="staff-order-summary">
                     <div class="step-pill">2</div>
                     <div>
-                        <div class="summary-label">Step 2: Double-check action details</div>
-                        <div class="summary-value" id="staged-action-text">👉 Staged Action: 12 Walk-in Refill(s)
+                        <div class="summary-label">2. Check the transaction</div>
+                        <div class="summary-value" id="staged-action-text">👉 Selected action: 12 Walk-in Refill(s)
                             (Customer pays ₱240)</div>
                     </div>
                 </div>
@@ -258,8 +273,8 @@
                 <div class="staff-order-summary confirm-section">
                     <div class="step-pill">3</div>
                     <div>
-                        <div class="summary-label">Step 3: Save to ledger</div>
-                        <button type="button" class="confirm-btn">Confirm & Save Order Now →</button>
+                        <div class="summary-label">3. Save the transaction</div>
+                        <button type="button" class="confirm-btn">Confirm and save transaction →</button>
                     </div>
                 </div>
             </section>
@@ -276,7 +291,7 @@
             <div class="auth-header">
                 <div id="auth-logo" class="auth-logo">A</div>
                 <h2 id="auth-title">Owner Security Login</h2>
-                <p id="auth-subtitle">Please log in to access your AquaSync system terminal.</p>
+                <p id="auth-subtitle">Sign in to manage sales, inventory, and staff activity.</p>
             </div>
 
             <form id="auth-form" class="auth-form">
@@ -293,8 +308,7 @@
                     </div>
                 </div>
 
-                <button type="submit" id="btn-auth-submit" class="primary-btn auth-submit-btn">Access System
-                    Terminal</button>
+                <button type="submit" id="btn-auth-submit" class="primary-btn auth-submit-btn">Sign in</button>
             </form>
 
             <div class="auth-footer">
@@ -315,23 +329,25 @@
         </div>
 
         <!-- Create Staff Section -->
-        <div
-            style="background: #11111b; padding: 15px; border-radius: 6px; margin-bottom: 20px; border: 1px solid #333;">
-            <h4 style="margin-top: 0; color: #38bdf8;">Create New Staff Account</h4>
-            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                <input id="staff-create-username" type="text" placeholder="Username"
-                    style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff;">
-                <input id="staff-create-password" type="password" placeholder="Password"
-                    style="flex: 1; padding: 8px; border-radius: 4px; border: 1px solid #444; background: #222; color: #fff;">
-                <button id="btn-create-staff" class="primary-btn" type="button"
-                    style="padding: 8px 16px;">Create</button>
+        <div class="staff-create-section">
+            <h4 class="modal-section-title">New staff member information</h4>
+            <p class="form-help">Complete all fields before creating the login account.</p>
+            <div class="staff-form-grid">
+                <label>Full name<input id="staff-create-full-name" type="text" placeholder="e.g. Juan Dela Cruz" required></label>
+                <label>Position<input id="staff-create-position" type="text" placeholder="e.g. Store staff" required></label>
+                <label>Contact number<input id="staff-create-phone" type="tel" placeholder="e.g. 09123456789" required></label>
+                <label>Email address<input id="staff-create-email" type="email" placeholder="e.g. juan@email.com" required></label>
+                <label class="staff-form-wide">Address<textarea id="staff-create-address" placeholder="Complete home address" rows="2" required></textarea></label>
+                <label>Username<input id="staff-create-username" type="text" placeholder="Login username" required></label>
+                <label>Password<input id="staff-create-password" type="password" placeholder="Login password" required></label>
             </div>
+            <button id="btn-create-staff" class="primary-btn" type="button">Create staff account</button>
             <div id="staff-create-status" style="color: #38bdf8; font-size: 0.9rem;"></div>
         </div>
 
         <!-- Staff List Section -->
         <div style="background: #11111b; padding: 15px; border-radius: 6px; border: 1px solid #333;">
-            <h4 style="margin-top: 0; color: #38bdf8;">Existing Staff Accounts</h4>
+            <h4 style="margin-top: 0; color: #38bdf8;">Staff accounts and information</h4>
             <div id="staff-list-container" style="max-height: 300px; overflow-y: auto;">
                 <p style="color: #999; text-align: center;">Loading staff list...</p>
             </div>

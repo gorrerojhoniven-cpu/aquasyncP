@@ -1319,6 +1319,362 @@ dialog.custom-modal::backdrop {
     font-size: 0.9rem;
 }
 
+.staff-create-section {
+    margin-bottom: 20px;
+    padding: 18px;
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    background: var(--surface);
+}
+
+.form-help {
+    margin: -4px 0 16px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.staff-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.staff-form-grid label {
+    display: grid;
+    gap: 6px;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.staff-form-grid input,
+.staff-form-grid textarea {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text-primary);
+    resize: vertical;
+}
+
+.staff-form-wide {
+    grid-column: 1 / -1;
+}
+
+.staff-create-section #btn-create-staff {
+    width: 100%;
+}
+
+/* Readability pass for the daily workflow */
+:root {
+    font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    --button-primary: linear-gradient(135deg, #14b8a6, #0ea5e9);
+    --button-accent: #2dd4bf;
+}
+
+body.theme-light {
+    --button-primary: linear-gradient(135deg, #0f9f8f, #0284c7);
+    --button-accent: #087f78;
+}
+
+.app-shell {
+    padding: 28px;
+    background: radial-gradient(circle at top right, rgba(20, 184, 166, 0.16), transparent 32%), var(--shell-bg);
+}
+
+.topbar {
+    max-width: 1180px;
+    border-radius: 12px;
+    border-top: 3px solid var(--button-accent);
+}
+
+.brand h1 {
+    font-size: 1.12rem;
+}
+
+.brand p {
+    color: var(--text-secondary);
+}
+
+.dashboard-container {
+    max-width: 1180px;
+}
+
+.dashboard-card {
+    border-radius: 12px;
+}
+
+.owner-monitor-card {
+    max-width: 1100px !important;
+    border: 1px solid var(--panel-border) !important;
+    border-top: 4px solid var(--button-accent) !important;
+    border-radius: 12px !important;
+}
+
+.dashboard-menu {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 8px;
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    background: var(--bg-alt);
+}
+
+.topbar {
+    justify-content: flex-end;
+    max-width: 1180px;
+    min-height: 0;
+    margin: 0 auto 18px;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.topbar .brand {
+    margin-right: auto;
+}
+
+.topbar-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+}
+
+.owner-session .topbar .brand {
+    display: none;
+}
+
+.dashboard-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 4px 8px 18px;
+}
+
+.dashboard-brand h1 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.dashboard-brand p {
+    margin: 2px 0 0;
+    color: var(--text-secondary);
+    font-size: 0.88rem;
+}
+
+.menu-heading {
+    margin-right: auto;
+    padding: 0 10px;
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 800;
+}
+
+.menu-item {
+    padding: 10px 14px;
+    border: 0;
+    border-radius: 7px;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 700;
+}
+
+.menu-item:hover,
+.menu-item.active {
+    background: var(--button-accent);
+    color: #042f2e;
+}
+
+.owner-menu-section.hidden {
+    display: none !important;
+}
+
+.dashboard-heading h2 {
+    letter-spacing: 0;
+}
+
+.dashboard-heading p {
+    line-height: 1.55;
+}
+
+.owner-actions-row {
+    padding: 14px;
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    background: var(--surface);
+}
+
+.secondary-btn,
+.danger-btn,
+.primary-btn,
+.confirm-btn,
+.action-set-btn {
+    border-radius: 8px;
+    letter-spacing: 0;
+}
+
+.primary-btn,
+.confirm-btn {
+    background: var(--button-primary);
+    color: #042f2e;
+}
+
+.danger-btn {
+    background: #b91c1c;
+}
+
+.owner-stat-card,
+.summary-card,
+.action-card,
+.staff-order-summary {
+    border-radius: 10px;
+}
+
+.stat-label,
+.summary-card span,
+.summary-label,
+.pos-subtitle,
+.log-heading,
+.field label {
+    text-transform: none;
+    letter-spacing: 0;
+}
+
+.stat-label,
+.summary-card span {
+    font-size: 0.9rem;
+    line-height: 1.35;
+}
+
+.owner-stat-card input:focus,
+.action-qty:focus,
+.field input:focus,
+.summary-date-picker:focus {
+    outline: 3px solid rgba(45, 212, 191, 0.25);
+    border-color: var(--button-accent);
+}
+
+.owner-sales-panel,
+.activity-logs-section {
+    border-radius: 10px !important;
+}
+
+.sales-title {
+    color: var(--button-accent);
+}
+
+.pos-section {
+    padding: 18px;
+    border: 1px solid var(--panel-border);
+    border-radius: 10px;
+    background: rgba(2, 6, 23, 0.16);
+}
+
+.pos-subtitle {
+    font-weight: 800;
+}
+
+.action-card.active-action {
+    border-color: var(--button-accent);
+}
+
+.auth-overlay {
+    background: rgba(2, 6, 23, 0.88);
+}
+
+.auth-card {
+    border-radius: 12px;
+    border-top: 4px solid var(--button-accent);
+}
+
+.auth-header h2 {
+    letter-spacing: 0;
+}
+
+.auth-header p {
+    line-height: 1.5;
+}
+
+dialog:not(.custom-modal) {
+    border-radius: 12px !important;
+    border: 1px solid var(--panel-border) !important;
+    box-shadow: var(--shadow);
+}
+
+dialog::backdrop {
+    background: rgba(2, 6, 23, 0.72);
+    backdrop-filter: blur(4px);
+}
+
+@media (max-width: 720px) {
+    .app-shell {
+        padding: 12px;
+    }
+
+    .topbar {
+        align-items: flex-end;
+        margin-bottom: 14px;
+    }
+
+    .dashboard-brand {
+        padding-bottom: 14px;
+    }
+
+    .owner-actions-row {
+        padding: 10px;
+    }
+
+    .dashboard-menu {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .menu-heading {
+        grid-column: 1 / -1;
+        margin-right: 0;
+        padding: 4px 8px;
+    }
+
+    .menu-item {
+        width: 100%;
+    }
+
+    .owner-actions-row button {
+        flex: 1 1 100%;
+    }
+
+    .pos-section {
+        padding: 12px;
+    }
+
+    .staff-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .staff-form-wide {
+        grid-column: auto;
+    }
+
+    .action-card-body {
+        grid-template-columns: 1fr;
+    }
+
+    .action-set-btn {
+        width: 100%;
+    }
+}
+
 .modal-list-container {
     max-height: 250px;
     overflow-y: auto;

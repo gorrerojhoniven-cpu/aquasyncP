@@ -57,12 +57,23 @@ db.serialize(() => {
   db.run(`CREATE TABLE IF NOT EXISTS staff_profiles (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     staff_id INTEGER UNIQUE NOT NULL,
+    full_name TEXT,
+    position TEXT,
+    phone TEXT,
+    email TEXT,
+    address TEXT,
     photo_data TEXT,
     photo_type TEXT,
     created_at TEXT NOT NULL,
     updated_at TEXT NOT NULL,
     FOREIGN KEY(staff_id) REFERENCES staff_accounts(id)
   )`);
+
+  ['full_name', 'position', 'phone', 'email', 'address'].forEach((column) => {
+    db.run(`ALTER TABLE staff_profiles ADD COLUMN ${column} TEXT`, () => {
+      // Ignore the error when the column already exists.
+    });
+  });
 });
 
 // Increase JSON payload limit to 50MB to support large image uploads
@@ -251,11 +262,11 @@ app.get('/api/sales-history', (req, res) => {
 // ==================== STAFF ACCOUNT MANAGEMENT ====================
 // Owner creates staff account
 app.post('/api/staff/create', (req, res) => {
-  const { username, password } = req.body;
+  const { fullName, position, phone, email, address, username, password } = req.body;
   const now = new Date().toISOString().replace('T', ' ').substring(0, 19);
 
-  if (!username || !password) {
-    return res.status(400).json({ error: 'Username and password required' });
+  if (!fullName || !position || !phone || !email || !address || !username || !password) {
+    return res.status(400).json({ error: 'Complete all staff information fields' });
   }
 
   db.run(
@@ -270,13 +281,14 @@ app.post('/api/staff/create', (req, res) => {
       }
       // Create staff profile entry
       db.run(
-        `INSERT INTO staff_profiles (staff_id, created_at, updated_at) VALUES (?, ?, ?)`,
-        [this.lastID, now, now],
+        `INSERT INTO staff_profiles (staff_id, full_name, position, phone, email, address, created_at, updated_at)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+        [this.lastID, fullName, position, phone, email, address, now, now],
         (profileErr) => {
           if (profileErr) {
             return res.status(500).json({ error: 'Failed to create profile' });
           }
-          res.json({ id: this.lastID, username, message: 'Staff account created successfully' });
+          res.json({ id: this.lastID, username, fullName, message: 'Staff account created successfully' });
         }
       );
     }
@@ -285,7 +297,10 @@ app.post('/api/staff/create', (req, res) => {
 
 // Get all staff accounts (owner only)
 app.get('/api/staff/list', (req, res) => {
-  const query = `SELECT id, username, created_at, updated_at FROM staff_accounts ORDER BY created_at`;
+  const query = `SELECT sa.id, sa.username, sa.created_at, sa.updated_at,
+    sp.full_name, sp.position, sp.phone, sp.email, sp.address
+    FROM staff_accounts sa LEFT JOIN staff_profiles sp ON sp.staff_id = sa.id
+    ORDER BY sa.created_at`;
   db.all(query, [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
@@ -364,7 +379,8 @@ app.get('/api/staff/:id/profile', (req, res) => {
   const staffId = req.params.id;
 
   db.get(
-    `SELECT sp.id, sa.username, sp.photo_data, sp.photo_type, sp.updated_at 
+            `SELECT sp.id, sa.username, sp.full_name, sp.position, sp.phone, sp.email, sp.address,
+              sp.photo_data, sp.photo_type, sp.updated_at
      FROM staff_profiles sp
      JOIN staff_accounts sa ON sp.staff_id = sa.id
      WHERE sp.staff_id = ?`,

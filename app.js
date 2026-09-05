@@ -80,8 +80,8 @@ function checkAccountStatus() {
         // Staff accounts are created by owner only - never show signup
         isSignUpMode = false;
         authTitle.innerText = 'Staff Security Login';
-        authSubtitle.innerText = 'Enter your credentials to access your AquaSync staff shift portal.';
-        btnAuthSubmit.innerText = 'Access Staff Portal';
+        authSubtitle.innerText = 'Sign in to record transactions and view today\'s inventory.';
+        btnAuthSubmit.innerText = 'Sign in as staff';
         btnToggleAuth.classList.add('hidden');  // Hide toggle button for staff
         authStatus.innerText = '';
         return;
@@ -93,16 +93,16 @@ function checkAccountStatus() {
 
     if (!accountExists) {
         isSignUpMode = true;
-        authTitle.innerText = 'Register Owner Account';
-        authSubtitle.innerText = 'No account found. Setup your owner profile credentials.';
+        authTitle.innerText = 'Create owner account';
+        authSubtitle.innerText = 'Set up the account used to manage your AquaSync business.';
         btnAuthSubmit.innerText = 'Create Account';
         btnToggleAuth.classList.add('hidden');
         authStatus.innerText = '';
     } else {
         isSignUpMode = false;
-        authTitle.innerText = 'Owner Security Login';
-        authSubtitle.innerText = 'Please log in to access your AquaSync system terminal.';
-        btnAuthSubmit.innerText = 'Access System Terminal';
+        authTitle.innerText = 'Owner sign in';
+        authSubtitle.innerText = 'Sign in to manage sales, inventory, and staff activity.';
+        btnAuthSubmit.innerText = 'Sign in as owner';
         btnToggleAuth.classList.remove('hidden');
         btnToggleAuth.innerText = 'Create Owner Account';
         authStatus.innerText = '';
@@ -350,11 +350,13 @@ async function authenticateUser(role, username, password) {
 
 function showDashboard(role) {
     loggedInRole = role;
+    document.getElementById('app-shell').classList.toggle('owner-session', role === 'owner');
     authOverlay.classList.add('hidden');
     btnLogout.classList.remove('hidden');
     ownerDashboard.classList.toggle('hidden', role !== 'owner');
     staffDashboard.classList.toggle('hidden', role !== 'staff');
     configureDashboardView(role);
+    if (role === 'owner') switchOwnerSection('overview');
     if (role === 'owner') {
         const date = ownerSummaryDate?.value || getTodayDate();
         fetchSalesSummary(date);
@@ -365,8 +367,33 @@ function showDashboard(role) {
     }
 }
 
+function switchOwnerSection(sectionName) {
+    const menuItems = document.querySelectorAll('.menu-item[data-owner-section]');
+    const sections = document.querySelectorAll('[data-owner-section-content]');
+
+    menuItems.forEach((item) => {
+        item.classList.toggle('active', item.dataset.ownerSection === sectionName);
+    });
+
+    sections.forEach((section) => {
+        section.classList.toggle('hidden', section.dataset.ownerSectionContent !== sectionName);
+    });
+}
+
+document.querySelectorAll('.menu-item[data-owner-section]').forEach((item) => {
+    item.addEventListener('click', () => {
+        const sectionName = item.dataset.ownerSection;
+        if (sectionName === 'staff') {
+            document.getElementById('btn-manage-staff')?.click();
+            return;
+        }
+        switchOwnerSection(sectionName);
+    });
+});
+
 function hideDashboard() {
     loggedInRole = null;
+    document.getElementById('app-shell').classList.remove('owner-session');
     loggedInStaffId = null;
     loggedInStaffUsername = null;
     authOverlay.classList.remove('hidden');
@@ -1077,6 +1104,11 @@ const modalStaffManagement = document.getElementById('modal-staff-management');
 const btnManageStaff = document.getElementById('btn-manage-staff');
 const btnCloseStaffModal = document.getElementById('btn-close-staff-modal');
 const btnCreateStaff = document.getElementById('btn-create-staff');
+const staffCreateFullName = document.getElementById('staff-create-full-name');
+const staffCreatePosition = document.getElementById('staff-create-position');
+const staffCreatePhone = document.getElementById('staff-create-phone');
+const staffCreateEmail = document.getElementById('staff-create-email');
+const staffCreateAddress = document.getElementById('staff-create-address');
 const staffCreateUsername = document.getElementById('staff-create-username');
 const staffCreatePassword = document.getElementById('staff-create-password');
 const staffCreateStatus = document.getElementById('staff-create-status');
@@ -1097,11 +1129,16 @@ if (btnCloseStaffModal) {
 
 if (btnCreateStaff) {
     btnCreateStaff.addEventListener('click', async () => {
+        const fullName = staffCreateFullName.value.trim();
+        const position = staffCreatePosition.value.trim();
+        const phone = staffCreatePhone.value.trim();
+        const email = staffCreateEmail.value.trim();
+        const address = staffCreateAddress.value.trim();
         const username = staffCreateUsername.value.trim();
         const password = staffCreatePassword.value.trim();
 
-        if (!username || !password) {
-            staffCreateStatus.innerText = 'Please enter username and password.';
+        if (!fullName || !position || !phone || !email || !address || !username || !password) {
+            staffCreateStatus.innerText = 'Please complete all staff information fields.';
             staffCreateStatus.style.color = '#f87171';
             return;
         }
@@ -1110,7 +1147,7 @@ if (btnCreateStaff) {
             const response = await fetch('/api/staff/create', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username, password })
+                body: JSON.stringify({ fullName, position, phone, email, address, username, password })
             });
 
             const data = await response.json();
@@ -1118,6 +1155,11 @@ if (btnCreateStaff) {
             if (response.ok) {
                 staffCreateStatus.innerText = `✓ Staff account created: ${username}`;
                 staffCreateStatus.style.color = '#4ade80';
+                staffCreateFullName.value = '';
+                staffCreatePosition.value = '';
+                staffCreatePhone.value = '';
+                staffCreateEmail.value = '';
+                staffCreateAddress.value = '';
                 staffCreateUsername.value = '';
                 staffCreatePassword.value = '';
                 setTimeout(() => loadStaffList(), 500);
@@ -1143,10 +1185,11 @@ async function loadStaffList() {
         }
 
         staffListContainer.innerHTML = staff.map(s => `
-            <div style="background: #222; padding: 10px; margin-bottom: 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="background: #222; padding: 10px; margin-bottom: 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; gap: 12px;">
                 <div>
-                    <strong style="color: #38bdf8;">${s.username}</strong>
-                    <div style="font-size: 0.8rem; color: #999;">Created: ${new Date(s.created_at).toLocaleDateString()}</div>
+                    <strong style="color: #38bdf8;">${s.full_name || 'Name not available'}</strong>
+                    <div style="font-size: 0.85rem; color: #ddd;">${s.position || 'Position not available'} · ${s.phone || 'No phone'}</div>
+                    <div style="font-size: 0.8rem; color: #999;">Username: ${s.username} · ${s.email || 'No email'} · Created: ${new Date(s.created_at).toLocaleDateString()}</div>
                 </div>
                 <button onclick="deleteStaffAccount(${s.id})" class="danger-btn" type="button" style="padding: 4px 12px; font-size: 0.85rem;">Delete</button>
             </div>

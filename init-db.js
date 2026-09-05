@@ -19,6 +19,29 @@ db.serialize(() => {
     created_at TEXT NOT NULL
   )`);
 
+  db.run(`CREATE TABLE IF NOT EXISTS staff_accounts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    username TEXT UNIQUE NOT NULL,
+    password TEXT NOT NULL,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  )`);
+
+  db.run(`CREATE TABLE IF NOT EXISTS staff_profiles (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    staff_id INTEGER UNIQUE NOT NULL,
+    full_name TEXT NOT NULL,
+    position TEXT NOT NULL,
+    phone TEXT NOT NULL,
+    email TEXT NOT NULL,
+    address TEXT NOT NULL,
+    photo_data TEXT,
+    photo_type TEXT,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL,
+    FOREIGN KEY(staff_id) REFERENCES staff_accounts(id)
+  )`);
+
   const sample = db.prepare(`INSERT INTO sales (amount, note, created_at) VALUES (?, ?, ?)`);
   const now = new Date();
   const pad = (value) => String(value).padStart(2, '0');
