@@ -46,6 +46,8 @@ const ownerReviewList = document.getElementById('owner-review-list');
 const themeToggleBtn = document.getElementById('btn-theme-toggle');
 const authThemeToggleBtn = document.getElementById('btn-theme-toggle-auth');
 const themePreferenceKey = 'theme_preference';
+const activeSessionKey = 'aquasync_active_session';
+const activeOwnerSectionKey = 'aquasync_active_owner_section';
 const rolloverMetaKey = 'dashboard-rollover-date';
 const defaultDashboardValues = { revenue: 1200, water: 1232, containers: 65, borrowed: 112 };
 let currentStagedAction = { label: 'No action', qty: 0, total: 0 };
@@ -226,6 +228,32 @@ function saveDashboardValues(values) {
     localStorage.setItem('dashboard-values', JSON.stringify(values));
 }
 
+async function loadSharedDashboardState(role = loggedInRole) {
+    try {
+        const response = await fetch('/api/dashboard-state');
+        if (!response.ok) throw new Error('Unable to load shared dashboard state');
+        const values = await response.json();
+        saveDashboardValues(values);
+        configureDashboardView(role);
+        return values;
+    } catch (error) {
+        console.error('Shared dashboard state unavailable:', error);
+        return getStoredDashboardValues();
+    }
+}
+
+async function saveSharedDashboardState(values) {
+    const response = await fetch('/api/dashboard-state', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(values)
+    });
+    if (!response.ok) throw new Error('Unable to save shared dashboard state');
+    const savedValues = await response.json();
+    saveDashboardValues(savedValues);
+    return savedValues;
+}
+
 function getLastRolloverDate() {
     return localStorage.getItem(rolloverMetaKey);
 }
@@ -401,6 +429,36 @@ async function authenticateUser(role, username, password) {
     }
 }
 
+function saveActiveSession(role, username, password) {
+    sessionStorage.setItem(activeSessionKey, JSON.stringify({ role, username, password }));
+}
+
+function clearActiveSession() {
+    sessionStorage.removeItem(activeSessionKey);
+}
+
+async function restoreActiveSession() {
+    const storedSession = sessionStorage.getItem(activeSessionKey);
+    if (!storedSession) return;
+
+    try {
+        const session = JSON.parse(storedSession);
+        if (!session.role || !session.username || !session.password) {
+            clearActiveSession();
+            return;
+        }
+
+        if (await authenticateUser(session.role, session.username, session.password)) {
+            showDashboard(session.role);
+        } else {
+            clearActiveSession();
+        }
+    } catch (error) {
+        console.error('Unable to restore active session:', error);
+        clearActiveSession();
+    }
+}
+
 function showDashboard(role) {
     loggedInRole = role;
     document.getElementById('app-shell').classList.toggle('owner-session', role === 'owner');
@@ -413,7 +471,10 @@ function showDashboard(role) {
     ownerDashboard.classList.toggle('hidden', role !== 'owner');
     staffDashboard.classList.toggle('hidden', role !== 'staff');
     configureDashboardView(role);
-    if (role === 'owner') switchOwnerSection('overview');
+    loadSharedDashboardState(role);
+    if (role === 'owner') {
+        switchOwnerSection(sessionStorage.getItem(activeOwnerSectionKey) || 'overview');
+    }
     if (role === 'owner') {
         const date = ownerSummaryDate?.value || getTodayDate();
         fetchSalesSummary(date);
@@ -425,6 +486,7 @@ function showDashboard(role) {
 }
 
 function switchOwnerSection(sectionName) {
+    sessionStorage.setItem(activeOwnerSectionKey, sectionName);
     const menuItems = document.querySelectorAll('.menu-item[data-owner-section]');
     const sections = document.querySelectorAll('[data-owner-section-content]');
 
@@ -566,6 +628,7 @@ authForm.addEventListener('submit', async (event) => {
     }
 
     if (await authenticateUser(activeRole, username, password)) {
+        saveActiveSession(activeRole, username, password);
         showDashboard(activeRole);
         setAuthMessage(`Welcome ${activeRole === 'owner' ? 'Owner' : 'Staff'} access granted.`, 'success');
         showToast('Login successful. Redirecting to dashboard.', 'success');
@@ -582,11 +645,12 @@ btnLogout.addEventListener('click', () => {
         return;
     }
 
+    clearActiveSession();
     hideDashboard();
     showToast('Logged out successfully.', 'success');
 });
 
-saveOwnerBtn.addEventListener('click', () => {
+saveOwnerBtn.addEventListener('click', async () => {
     const values = {};
     const inputs = Array.from(document.querySelectorAll('#owner-dashboard input[data-stat]'));
     const emptyField = inputs.find((input) => input.value === '' || input.value == null);
@@ -600,10 +664,17 @@ saveOwnerBtn.addEventListener('click', () => {
     inputs.forEach((input) => {
         values[input.dataset.stat] = Number(input.value) || 0;
     });
-    localStorage.setItem('dashboard-values', JSON.stringify(values));
-    configureDashboardView('owner');
-    setAuthMessage('Owner values saved.', 'success');
-    showToast('Owner values have been saved.', 'success');
+    try {
+        await saveSharedDashboardState(values);
+        configureDashboardView('owner');
+        setAuthMessage('Owner values saved for all devices.', 'success');
+        showToast('Owner values have been saved for all devices.', 'success');
+    } catch (error) {
+        localStorage.setItem('dashboard-values', JSON.stringify(values));
+        configureDashboardView('owner');
+        setAuthMessage('Saved locally. Server is unavailable.', 'error');
+        showToast('Server unavailable. Saved locally for now.', 'warning');
+    }
 });
 
 function isAnyOwnerInventoryZero() {
@@ -622,7 +693,7 @@ if (btnRefreshSales) {
     });
 }
 
-ownerResetBtn.addEventListener('click', () => {
+ownerResetBtn.addEventListener('click', async () => {
     const confirmed = window.confirm('Reset owner dashboard values to zero? This cannot be undone without undo.');
     if (!confirmed) {
         showToast('Reset canceled.', 'info');
@@ -635,13 +706,19 @@ ownerResetBtn.addEventListener('click', () => {
     localStorage.setItem('owner-history', JSON.stringify(history.slice(-10)));
 
     const resetValues = { revenue: 0, water: 0, containers: 0, borrowed: 0 };
-    localStorage.setItem('dashboard-values', JSON.stringify(resetValues));
-    configureDashboardView('owner');
-    setAuthMessage('Owner dashboard reset to zero.', 'success');
-    showToast('Owner dashboard reset to zero.', 'success');
+    try {
+        await saveSharedDashboardState(resetValues);
+        configureDashboardView('owner');
+        setAuthMessage('Owner dashboard reset for all devices.', 'success');
+        showToast('Owner dashboard reset for all devices.', 'success');
+    } catch (error) {
+        saveDashboardValues(resetValues);
+        configureDashboardView('owner');
+        showToast('Server unavailable. Reset saved locally only.', 'warning');
+    }
 });
 
-ownerUndoBtn.addEventListener('click', () => {
+ownerUndoBtn.addEventListener('click', async () => {
     const history = JSON.parse(localStorage.getItem('owner-history') || '[]');
     if (!history.length) {
         setAuthMessage('Nothing to undo.', 'error');
@@ -651,10 +728,16 @@ ownerUndoBtn.addEventListener('click', () => {
 
     const previousState = history.pop();
     localStorage.setItem('owner-history', JSON.stringify(history));
-    localStorage.setItem('dashboard-values', JSON.stringify(previousState));
-    configureDashboardView('owner');
-    setAuthMessage('Previous owner state restored.', 'success');
-    showToast('Owner dashboard undo completed.', 'success');
+    try {
+        await saveSharedDashboardState(previousState);
+        configureDashboardView('owner');
+        setAuthMessage('Previous owner state restored for all devices.', 'success');
+        showToast('Owner dashboard undo completed.', 'success');
+    } catch (error) {
+        saveDashboardValues(previousState);
+        configureDashboardView('owner');
+        showToast('Server unavailable. Undo saved locally only.', 'warning');
+    }
 });
 
 function updateOwnerUndoState() {
@@ -932,8 +1015,16 @@ if (confirmOrderBtn) {
             actionsToProcess.forEach((action) => {
                 combinedTotal += action.totalCash;
                 postActivityLog({ role: 'staff', action: action.label, qty: action.qty, amount: action.totalCash, note: 'Action confirmed (not saved to sales DB)' });
-                simulateStaffAction(action.label, action.qty, action.totalCash);
             });
+
+            const stateResponse = await fetch('/api/dashboard-state/transactions', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ actions: actionsToProcess })
+            });
+            if (!stateResponse.ok) throw new Error('Shared dashboard update failed');
+            const sharedValues = await stateResponse.json();
+            saveDashboardValues(sharedValues);
 
             currentStagedAction = { label: 'Multiple actions', qty: actionsToProcess.reduce((sum, action) => sum + action.qty, 0), total: combinedTotal };
             stagedActionText.innerText = '👉 Staged Action: Multiple actions confirmed';
@@ -1056,6 +1147,7 @@ async function fetchActivityLogs() {
         if (ownerMonitorStatus) {
             ownerMonitorStatus.innerText = lines.length ? `Last action: ${lines[0]}` : 'Owner monitor is ready. Waiting for staff actions...';
         }
+        await loadSharedDashboardState('owner');
     } catch (err) {
         // fallback to local log if server not reachable
         const logLines = JSON.parse(localStorage.getItem('staff-activity-log') || '[]');
@@ -1064,7 +1156,7 @@ async function fetchActivityLogs() {
     }
 }
 
-function initializeApp() {
+async function initializeApp() {
     initializeTheme();
     applyDailyRollover();
     scheduleMidnightRollover();
@@ -1073,6 +1165,7 @@ function initializeApp() {
     if (Object.keys(savedValues).length) {
         configureDashboardView('owner');
     }
+    await restoreActiveSession();
 }
 
 const showPasswordCheckbox = document.getElementById('chk-show-password');

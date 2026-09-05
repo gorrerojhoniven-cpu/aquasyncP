@@ -9,6 +9,18 @@ db.serialize(() => {
     created_at TEXT NOT NULL
   )`);
 
+  db.run(`CREATE TABLE IF NOT EXISTS dashboard_state (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    revenue REAL NOT NULL DEFAULT 1200,
+    water REAL NOT NULL DEFAULT 1232,
+    containers REAL NOT NULL DEFAULT 65,
+    borrowed REAL NOT NULL DEFAULT 112,
+    updated_at TEXT NOT NULL
+  )`);
+
+  db.run(`INSERT OR IGNORE INTO dashboard_state (id, revenue, water, containers, borrowed, updated_at)
+    VALUES (1, 1200, 1232, 65, 112, datetime('now'))`);
+
   db.run(`CREATE TABLE IF NOT EXISTS activity_logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     role TEXT,

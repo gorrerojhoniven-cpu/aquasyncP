@@ -22,6 +22,19 @@ db.serialize(() => {
     created_at TEXT NOT NULL
   )`);
 
+  db.run(`CREATE TABLE IF NOT EXISTS dashboard_state (
+    id INTEGER PRIMARY KEY CHECK (id = 1),
+    revenue REAL NOT NULL DEFAULT 1200,
+    water REAL NOT NULL DEFAULT 1232,
+    containers REAL NOT NULL DEFAULT 65,
+    borrowed REAL NOT NULL DEFAULT 112,
+    updated_at TEXT NOT NULL
+  )`);
+  db.run(
+    `INSERT OR IGNORE INTO dashboard_state (id, revenue, water, containers, borrowed, updated_at)
+     VALUES (1, 1200, 1232, 65, 112, datetime('now'))`
+  );
+
   db.run(`CREATE TABLE IF NOT EXISTS activity_logs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     role TEXT,
@@ -80,6 +93,68 @@ db.serialize(() => {
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static(path.join(__dirname)));
+
+app.get('/api/dashboard-state', (req, res) => {
+  db.get(`SELECT revenue, water, containers, borrowed, updated_at FROM dashboard_state WHERE id = 1`, [], (err, row) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(row || { revenue: 1200, water: 1232, containers: 65, borrowed: 112 });
+  });
+});
+
+app.put('/api/dashboard-state', (req, res) => {
+  const { revenue, water, containers, borrowed } = req.body;
+  const values = [revenue, water, containers, borrowed].map(Number);
+  if (values.some((value) => !Number.isFinite(value) || value < 0)) {
+    return res.status(400).json({ error: 'Dashboard values must be non-negative numbers' });
+  }
+
+  const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
+  db.run(
+    `UPDATE dashboard_state SET revenue = ?, water = ?, containers = ?, borrowed = ?, updated_at = ? WHERE id = 1`,
+    [...values, timestamp],
+    (err) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ revenue: values[0], water: values[1], containers: values[2], borrowed: values[3], updated_at: timestamp });
+    }
+  );
+});
+
+app.post('/api/dashboard-state/transactions', (req, res) => {
+  const actions = Array.isArray(req.body.actions) ? req.body.actions : [];
+  if (!actions.length) return res.status(400).json({ error: 'At least one transaction is required' });
+
+  db.get(`SELECT revenue, water, containers, borrowed FROM dashboard_state WHERE id = 1`, [], (readErr, row) => {
+    if (readErr) return res.status(500).json({ error: readErr.message });
+    const values = {
+      revenue: Number(row?.revenue || 0),
+      water: Number(row?.water || 0),
+      containers: Number(row?.containers || 0),
+      borrowed: Number(row?.borrowed || 0)
+    };
+
+    actions.forEach(({ label, qty, totalCash }) => {
+      const quantity = Math.max(0, Number(qty) || 0);
+      values.revenue += Number(totalCash) || 0;
+      values.water = Math.max(0, values.water - quantity);
+      if (String(label).toLowerCase().includes('new jug')) values.containers = Math.max(0, values.containers - quantity);
+      if (String(label).toLowerCase().includes('dispatch')) values.borrowed += quantity;
+      if (String(label).toLowerCase().includes('recover')) {
+        values.containers += quantity;
+        values.borrowed = Math.max(0, values.borrowed - quantity);
+      }
+    });
+
+    const timestamp = new Date().toISOString().replace('T', ' ').substring(0, 19);
+    db.run(
+      `UPDATE dashboard_state SET revenue = ?, water = ?, containers = ?, borrowed = ?, updated_at = ? WHERE id = 1`,
+      [values.revenue, values.water, values.containers, values.borrowed, timestamp],
+      (updateErr) => {
+        if (updateErr) return res.status(500).json({ error: updateErr.message });
+        res.json({ ...values, updated_at: timestamp });
+      }
+    );
+  });
+});
 
 app.get('/api/sales-summary', (req, res) => {
   const now = new Date();
