@@ -1104,7 +1104,7 @@ button, input, textarea {
 
 @media (max-width: 720px) {
     .app-shell {
-        padding: 12px;
+        padding: 8px;
     }
 
     .topbar {
@@ -1571,6 +1571,13 @@ body.theme-light {
     padding: 4px 8px 18px;
 }
 
+.dashboard-brand-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+}
+
 .dashboard-brand h1 {
     margin: 0;
     font-size: 1.25rem;
@@ -1740,16 +1747,62 @@ dialog::backdrop {
     }
 
     .dashboard-brand {
-        align-items: flex-start;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 8px;
+        padding: 2px 2px 14px;
     }
 
     .dashboard-brand .topbar-actions {
-        flex-direction: column;
-        align-items: stretch;
+        flex-direction: row;
+        align-items: center;
+        gap: 6px;
     }
 
-    .dashboard-brand {
-        padding-bottom: 14px;
+    .dashboard-brand .brand-mark {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        font-size: 1rem;
+    }
+
+    .dashboard-brand h1 {
+        font-size: 1.08rem;
+    }
+
+    .dashboard-brand p {
+        max-width: 180px;
+        font-size: 0.74rem;
+        line-height: 1.25;
+    }
+
+    .dashboard-brand .topbar-actions button {
+        min-width: 0;
+        padding: 8px 9px;
+        border-radius: 8px;
+        font-size: 0.72rem;
+        line-height: 1.1;
+        white-space: nowrap;
+    }
+
+    .owner-monitor-card {
+        padding: 12px !important;
+        gap: 14px !important;
+    }
+
+    .dashboard-menu {
+        gap: 4px;
+        padding: 6px;
+    }
+
+    .menu-heading {
+        padding: 3px 6px;
+    }
+
+    .menu-item {
+        padding: 9px 6px;
+        font-size: 0.82rem;
     }
 
     .owner-actions-row {
