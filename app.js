@@ -557,9 +557,11 @@ function configureDashboardView(role) {
     if (staffContainersText) staffContainersText.innerText = staffValues.containers;
     if (staffBorrowedText) staffBorrowedText.innerText = staffValues.borrowed;
 
-    const logLines = JSON.parse(localStorage.getItem('staff-activity-log') || '[]');
-    ownerActivityLog.value = logLines.slice(0, 8).join('\n');
-    ownerMonitorStatus.innerText = getMonitorStatus(currentValues);
+    if (!loggedInRole || loggedInRole !== 'owner') {
+        const logLines = JSON.parse(localStorage.getItem('staff-activity-log') || '[]');
+        if (ownerActivityLog) ownerActivityLog.value = logLines.slice(0, 8).join('\n');
+        if (ownerMonitorStatus) ownerMonitorStatus.innerText = getMonitorStatus(currentValues);
+    }
     updateOwnerUndoState();
 }
 
@@ -1126,6 +1128,7 @@ if (btnSaveActivity) {
 
 // Activity log polling and rendering
 let activityPollInterval = null;
+let lastActivitySignature = '';
 
 async function fetchActivityLogs() {
     try {
@@ -1140,19 +1143,26 @@ async function fetchActivityLogs() {
             return `${new Date(r.created_at).toLocaleTimeString()} – ${staffName}: ${r.action} x${r.qty} (₱${r.amount})${r.note ? ' – ' + r.note : ''}`;
         });
         
-        // Kung wala nang unsaved activity, magiging bakante ang textarea
-        if (ownerActivityLog) {
-            ownerActivityLog.value = lines.length ? lines.join('\n') : '';
-        }
-        if (ownerMonitorStatus) {
-            ownerMonitorStatus.innerText = lines.length ? `Last action: ${lines[0]}` : 'Owner monitor is ready. Waiting for staff actions...';
+        const activitySignature = rows.map((row) => `${row.created_at}|${row.staff_id}|${row.action}|${row.qty}|${row.amount}`).join('\n');
+        if (activitySignature !== lastActivitySignature) {
+            lastActivitySignature = activitySignature;
+            if (ownerActivityLog) {
+                ownerActivityLog.value = lines.length ? lines.join('\n') : '';
+            }
+            if (ownerMonitorStatus) {
+                ownerMonitorStatus.innerText = lines.length ? `Last action: ${lines[0]}` : 'Owner monitor is ready. Waiting for staff actions...';
+            }
         }
         await loadSharedDashboardState('owner');
     } catch (err) {
         // fallback to local log if server not reachable
         const logLines = JSON.parse(localStorage.getItem('staff-activity-log') || '[]');
-        if (ownerActivityLog) ownerActivityLog.value = logLines.length ? logLines.slice(0, 8).join('\n') : '';
-        if (ownerMonitorStatus) ownerMonitorStatus.innerText = getMonitorStatus(JSON.parse(localStorage.getItem('dashboard-values') || '{}'));
+        if (!lastActivitySignature && ownerActivityLog) {
+            ownerActivityLog.value = logLines.length ? logLines.slice(0, 8).join('\n') : '';
+        }
+        if (!lastActivitySignature && ownerMonitorStatus) {
+            ownerMonitorStatus.innerText = getMonitorStatus(JSON.parse(localStorage.getItem('dashboard-values') || '{}'));
+        }
     }
 }
 
