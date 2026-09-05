@@ -198,15 +198,17 @@ app.get('/api/activity', (req, res) => {
 
 // Fetch ALL saved/archived activity logs from database for "Review All Logs"
 app.get('/api/activity/all-saved', (req, res) => {
+  const date = String(req.query.date || '').trim();
   const query = `
     SELECT al.role, al.action, al.qty, al.amount, al.note, al.created_at, al.staff_id,
            COALESCE(sa.username, 'Unknown') as staff_name
     FROM activity_logs al
     LEFT JOIN staff_accounts sa ON al.staff_id = sa.id
+    WHERE (? = '' OR substr(al.created_at, 1, 10) = ?)
     ORDER BY al.created_at DESC
   `;
 
-  db.all(query, [], (err, rows) => {
+  db.all(query, [date, date], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows.map(r => ({
       role: r.role,

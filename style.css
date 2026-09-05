@@ -828,6 +828,68 @@ button, input, textarea {
     color: var(--text-primary);
 }
 
+.staged-actions-list {
+    display: grid;
+    gap: 8px;
+    margin-top: 14px;
+}
+
+.staged-action-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    background: var(--bg);
+}
+
+.staged-action-details {
+    display: grid;
+    gap: 4px;
+    min-width: 0;
+}
+
+.staged-action-details strong {
+    overflow-wrap: anywhere;
+}
+
+.staged-action-details span,
+.staged-empty {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+}
+
+.staged-quantity-label {
+    display: grid;
+    gap: 4px;
+    color: var(--text-secondary);
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+.staged-quantity-input {
+    width: 76px;
+    padding: 8px;
+    border: 1px solid var(--panel-border);
+    border-radius: 7px;
+    background: var(--panel);
+    color: var(--text-primary);
+}
+
+.staged-remove-btn {
+    padding: 8px 10px;
+    border: 1px solid rgba(248, 113, 113, 0.3);
+    border-radius: 7px;
+    background: rgba(248, 113, 113, 0.12);
+    color: #fecaca;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+
 .confirm-section {
     padding-top: 24px;
 }
@@ -1319,6 +1381,43 @@ dialog.custom-modal::backdrop {
     font-size: 0.9rem;
 }
 
+.logs-date-filter {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding: 10px;
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    background: var(--surface);
+}
+
+.logs-date-filter label {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.logs-date-filter input {
+    padding: 8px 10px;
+    border: 1px solid var(--panel-border);
+    border-radius: 7px;
+    background: var(--bg);
+    color: var(--text-primary);
+}
+
+@media (max-width: 520px) {
+    .logs-date-filter {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .logs-date-filter input,
+    .logs-date-filter button {
+        width: 100%;
+    }
+}
+
 .staff-create-section {
     margin-bottom: 20px;
     padding: 18px;
@@ -1427,13 +1526,13 @@ body.theme-light {
 .topbar {
     justify-content: flex-end;
     max-width: 1180px;
-    min-height: 0;
-    margin: 0 auto 18px;
-    padding: 0;
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    box-shadow: none;
+    margin: 0 auto 24px;
+    padding: 16px 20px;
+    border: 1px solid var(--panel-border);
+    border-top: 3px solid var(--button-accent);
+    border-radius: 12px;
+    background: var(--panel);
+    box-shadow: var(--shadow);
 }
 
 .topbar .brand {
@@ -1449,6 +1548,19 @@ body.theme-light {
 
 .owner-session .topbar .brand {
     display: none;
+}
+
+.owner-session .topbar {
+    min-height: 0;
+    margin-bottom: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    box-shadow: none;
+}
+
+.dashboard-brand .topbar-actions {
+    margin-left: auto;
 }
 
 .dashboard-brand {
@@ -1628,6 +1740,15 @@ dialog::backdrop {
     }
 
     .dashboard-brand {
+        align-items: flex-start;
+    }
+
+    .dashboard-brand .topbar-actions {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .dashboard-brand {
         padding-bottom: 14px;
     }
 
@@ -1668,6 +1789,18 @@ dialog::backdrop {
 
     .action-card-body {
         grid-template-columns: 1fr;
+    }
+
+    .staged-action-row {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .staged-action-details {
+        grid-column: 1 / -1;
+    }
+
+    .staged-remove-btn {
+        width: 100%;
     }
 
     .action-set-btn {

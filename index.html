@@ -265,8 +265,8 @@
                     <div class="step-pill">2</div>
                     <div>
                         <div class="summary-label">2. Check the transaction</div>
-                        <div class="summary-value" id="staged-action-text">👉 Selected action: 12 Walk-in Refill(s)
-                            (Customer pays ₱240)</div>
+                        <div class="summary-value" id="staged-action-text">No quantities selected yet.</div>
+                        <div id="staged-actions-list" class="staged-actions-list" aria-live="polite"></div>
                     </div>
                 </div>
 
@@ -402,6 +402,11 @@
             <button id="btn-close-modal" type="button"
                 style="background: transparent; border: none; color: #fff; font-size: 1.2rem; cursor: pointer;">✕</button>
         </div>
+            <div class="logs-date-filter">
+                <label for="saved-logs-date">Search by date</label>
+                <input id="saved-logs-date" type="date">
+                <button id="btn-clear-saved-logs-date" class="secondary-btn" type="button">Show all dates</button>
+            </div>
         <div id="all-logs-content"
             style="max-height: 350px; overflow-y: auto; background: #11111b; padding: 12px; border-radius: 6px; font-family: monospace; white-space: pre-wrap; font-size: 0.85rem; border: 1px solid #333;">
             Loading logs...

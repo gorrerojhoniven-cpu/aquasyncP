@@ -34,6 +34,7 @@ const monthlySalesText = document.getElementById('monthly-sales');
 const yearlySalesText = document.getElementById('yearly-sales');
 const summaryCountText = document.getElementById('summary-count');
 const stagedActionText = document.getElementById('staged-action-text');
+const stagedActionsList = document.getElementById('staged-actions-list');
 const staffRevenueText = document.getElementById('staff-revenue');
 const staffWaterText = document.getElementById('staff-water');
 const staffContainersText = document.getElementById('staff-containers');
@@ -48,6 +49,58 @@ const themePreferenceKey = 'theme_preference';
 const rolloverMetaKey = 'dashboard-rollover-date';
 const defaultDashboardValues = { revenue: 1200, water: 1232, containers: 65, borrowed: 112 };
 let currentStagedAction = { label: 'No action', qty: 0, total: 0 };
+
+function getStaffActionFromCard(card) {
+    const qty = Number(card.querySelector('.action-qty')?.value) || 0;
+    const label = card.querySelector('.action-label')?.innerText || 'Unknown action';
+    const priceText = card.querySelector('.action-price')?.innerText || card.querySelector('.action-meta')?.innerText || '';
+    const unitPrice = Number((priceText.match(/₱([0-9]+(?:\.[0-9]{1,2})?)/) || [0, '0'])[1]) || 0;
+    return { label, qty, unitPrice, totalCash: qty * unitPrice };
+}
+
+function renderStagedActions() {
+    if (!stagedActionsList || !stagedActionText) return;
+
+    const actionCards = Array.from(document.querySelectorAll('.action-card'));
+    const actions = actionCards
+        .map((card, index) => ({ ...getStaffActionFromCard(card), index }))
+        .filter((action) => action.qty > 0);
+
+    if (!actions.length) {
+        stagedActionText.innerText = 'No quantities selected yet.';
+        stagedActionsList.innerHTML = '<div class="staged-empty">Set a quantity above to add it here.</div>';
+        return;
+    }
+
+    const total = actions.reduce((sum, action) => sum + action.totalCash, 0);
+    stagedActionText.innerText = `${actions.length} item${actions.length === 1 ? '' : 's'} selected · Total: ₱${total}`;
+    stagedActionsList.innerHTML = actions.map((action) => `
+        <div class="staged-action-row" data-card-index="${action.index}">
+            <div class="staged-action-details">
+                <strong>${action.label}</strong>
+                <span>₱${action.unitPrice.toFixed(2)} each · Subtotal: ₱${action.totalCash.toFixed(2)}</span>
+            </div>
+            <label class="staged-quantity-label">Qty
+                <input class="staged-quantity-input" type="number" min="0" value="${action.qty}" aria-label="Quantity for ${action.label}">
+            </label>
+            <button type="button" class="staged-remove-btn">Remove</button>
+        </div>
+    `).join('');
+
+    stagedActionsList.querySelectorAll('.staged-action-row').forEach((row) => {
+        const card = actionCards[Number(row.dataset.cardIndex)];
+        const quantityInput = row.querySelector('.staged-quantity-input');
+        quantityInput.addEventListener('input', () => {
+            card.querySelector('.action-qty').value = Math.max(0, Number(quantityInput.value) || 0);
+            renderStagedActions();
+        });
+        row.querySelector('.staged-remove-btn').addEventListener('click', () => {
+            card.querySelector('.action-qty').value = '';
+            renderStagedActions();
+            showToast(`${getStaffActionFromCard(card).label} removed from the transaction.`, 'info');
+        });
+    });
+}
 
 const ownerAccountKey = 'owner_account';
 const staffAccountKey = 'staff_account';
@@ -353,6 +406,10 @@ function showDashboard(role) {
     document.getElementById('app-shell').classList.toggle('owner-session', role === 'owner');
     authOverlay.classList.add('hidden');
     btnLogout.classList.remove('hidden');
+    const dashboardBrand = document.querySelector('.dashboard-brand');
+    if (role === 'owner' && dashboardBrand) {
+        dashboardBrand.appendChild(document.querySelector('.topbar-actions'));
+    }
     ownerDashboard.classList.toggle('hidden', role !== 'owner');
     staffDashboard.classList.toggle('hidden', role !== 'staff');
     configureDashboardView(role);
@@ -394,6 +451,9 @@ document.querySelectorAll('.menu-item[data-owner-section]').forEach((item) => {
 function hideDashboard() {
     loggedInRole = null;
     document.getElementById('app-shell').classList.remove('owner-session');
+    const topbar = document.querySelector('.topbar');
+    const topbarActions = document.querySelector('.topbar-actions');
+    if (topbar && topbarActions) topbar.appendChild(topbarActions);
     loggedInStaffId = null;
     loggedInStaffUsername = null;
     authOverlay.classList.remove('hidden');
@@ -818,12 +878,8 @@ const staffActionButtons = document.querySelectorAll('.action-set-btn');
 staffActionButtons.forEach((button) => {
     button.addEventListener('click', () => {
         const card = button.closest('.action-card');
-        const qtyInput = card.querySelector('.action-qty');
-        const qty = Number(qtyInput.value) || 0;
-        const label = card.querySelector('.action-label').innerText;
-        const priceText = card.querySelector('.action-price')?.innerText || card.querySelector('.action-meta')?.innerText || '';
-        const unitPrice = Number((priceText.match(/₱([0-9]+(?:\.[0-9]{1,2})?)/) || [0, '0'])[1]) || 0;
-        const totalCash = qty * unitPrice;
+        const action = getStaffActionFromCard(card);
+        const { label, qty, totalCash } = action;
 
         if (!qty) {
             setAuthMessage('Please enter a quantity for staff action.', 'error');
@@ -832,8 +888,7 @@ staffActionButtons.forEach((button) => {
         }
 
         currentStagedAction = { label, qty, total: totalCash };
-        const paymentText = totalCash > 0 ? `Customer pays ₱${totalCash}` : 'No customer payment required';
-        stagedActionText.innerText = `👉 Staged Action: ${qty} ${label}(s) (${paymentText})`;
+        renderStagedActions();
         showToast(`Action staged: ${label} x${qty}.`, 'success');
     });
 });
@@ -887,6 +942,7 @@ if (confirmOrderBtn) {
                 const qtyInput = card.querySelector('.action-qty');
                 if (qtyInput) qtyInput.value = '';
             });
+            renderStagedActions();
 
             showToast('All staff actions confirmed and monitored.', 'success');
             setAuthMessage('Staff actions confirmed and visible on owner monitor.', 'success');
@@ -1029,36 +1085,50 @@ const btnReviewAllLogs = document.getElementById('btn-review-all-logs');
 const modalAllLogs = document.getElementById('modal-all-logs');
 const btnCloseModal = document.getElementById('btn-close-modal');
 const allLogsContent = document.getElementById('all-logs-content');
+const savedLogsDate = document.getElementById('saved-logs-date');
+const btnClearSavedLogsDate = document.getElementById('btn-clear-saved-logs-date');
+
+async function loadAllSavedLogs() {
+    if (!allLogsContent) return;
+    allLogsContent.innerText = 'Loading saved logs from database...';
+
+    try {
+        const selectedDate = savedLogsDate?.value || '';
+        const query = selectedDate ? `?date=${encodeURIComponent(selectedDate)}` : '';
+        const resp = await fetch(`/api/activity/all-saved${query}`);
+        if (!resp.ok) throw new Error('Failed to fetch saved logs');
+
+        const rows = await resp.json();
+        if (rows.length === 0) {
+            allLogsContent.innerText = selectedDate
+                ? `No saved logs found for ${selectedDate}.`
+                : 'No saved logs found in database.';
+            return;
+        }
+
+        allLogsContent.innerText = rows.map((row) => {
+            const time = new Date(row.created_at).toLocaleString();
+            const staffName = row.staff_name ? row.staff_name : (row.role === 'staff' ? 'Staff' : row.role);
+            return `[${time}] ${staffName}: ${row.action} x${row.qty} (₱${row.amount})${row.note ? ' - ' + row.note : ''}`;
+        }).join('\n');
+    } catch (error) {
+        console.error(error);
+        allLogsContent.innerText = 'Error loading logs from database.';
+    }
+}
 
 if (btnReviewAllLogs && modalAllLogs) {
     btnReviewAllLogs.addEventListener('click', async () => {
         modalAllLogs.showModal();
-        allLogsContent.innerText = 'Loading saved logs from database...';
-
-        try {
-            const resp = await fetch('/api/activity/all-saved');
-            if (!resp.ok) throw new Error('Failed to fetch saved logs');
-            
-            const rows = await resp.json();
-            
-            if (rows.length === 0) {
-                allLogsContent.innerText = 'No saved logs found in database.';
-                return;
-            }
-
-            const formattedLogs = rows.map(r => {
-                const time = new Date(r.created_at).toLocaleString();
-                const staffName = r.staff_name ? r.staff_name : (r.role === 'staff' ? 'Staff' : r.role);
-                return `[${time}] ${staffName}: ${r.action} x${r.qty} (₱${r.amount})${r.note ? ' - ' + r.note : ''}`;
-            }).join('\n');
-
-            allLogsContent.innerText = formattedLogs;
-        } catch (err) {
-            console.error(err);
-            allLogsContent.innerText = 'Error loading logs from database.';
-        }
+        await loadAllSavedLogs();
     });
 }
+
+savedLogsDate?.addEventListener('change', loadAllSavedLogs);
+btnClearSavedLogsDate?.addEventListener('click', () => {
+    if (savedLogsDate) savedLogsDate.value = '';
+    loadAllSavedLogs();
+});
 
 if (btnCloseModal && modalAllLogs) {
     btnCloseModal.addEventListener('click', () => {
