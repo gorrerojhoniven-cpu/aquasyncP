@@ -1017,13 +1017,16 @@ function postActivityLog(activity) {
             payload.staffId = loggedInStaffId;
         }
         
-        fetch('/api/activity', {
+        return fetch('/api/activity', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
-        }).catch(() => {});
+        }).then((response) => {
+            if (!response.ok) throw new Error('Failed to save activity');
+            return response.json();
+        });
     } catch (e) {
-        // ignore failures
+        return Promise.reject(e);
     }
 }
 
@@ -1108,10 +1111,10 @@ if (confirmOrderBtn) {
 
         try {
             let combinedTotal = 0;
-            actionsToProcess.forEach((action) => {
+            await Promise.all(actionsToProcess.map((action) => {
                 combinedTotal += action.totalCash;
-                postActivityLog({ role: 'staff', action: action.label, qty: action.qty, amount: action.totalCash, note: 'Action confirmed (not saved to sales DB)' });
-            });
+                return postActivityLog({ role: 'staff', action: action.label, qty: action.qty, amount: action.totalCash, note: 'Action confirmed' });
+            }));
 
             const stateResponse = await fetch('/api/dashboard-state/transactions', {
                 method: 'POST',
@@ -1145,23 +1148,43 @@ if (confirmOrderBtn) {
 
 if (btnSaveActivity) {
     btnSaveActivity.addEventListener('click', async () => {
-        // 1. Kukunin ang logs mula sa localStorage o sa ownerActivityLog textarea
+        // Use database records as the source of truth so saving also works after refresh or on another device.
+        let pendingRows = [];
+        try {
+            const pendingResponse = await fetch('/api/activity?limit=100');
+            if (pendingResponse.ok) pendingRows = await pendingResponse.json();
+        } catch (error) {
+            pendingRows = [];
+        }
+
         let logLines = JSON.parse(localStorage.getItem('staff-activity-log') || '[]');
-        
-        if (logLines.length === 0 && ownerActivityLog && ownerActivityLog.value.trim() !== '') {
+        if (!pendingRows.length && ownerActivityLog && ownerActivityLog.value.trim() !== '') {
             logLines = ownerActivityLog.value.split('\n').filter(line => line.trim() !== '');
         }
 
-        if (logLines.length === 0) {
+        if (!pendingRows.length && !logLines.length) {
             showToast('No activity to save.', 'info');
             return;
         }
 
-        // 2. Kunin ang total price mula sa mga logs
-        const totalAmountToSave = parseActivityLogTotal(logLines);
+        const totalAmountToSave = pendingRows.length
+            ? pendingRows.reduce((sum, row) => sum + (Number(row.amount) || 0), 0)
+            : parseActivityLogTotal(logLines);
 
-        // 3. I-save muna sa local reviews list (History sa UI)
-        const structuredRows = logLines.flatMap((line) => {
+        // Save the exact database rows locally for the grouped saved-orders view.
+        const structuredRows = pendingRows.length
+            ? pendingRows.map((row) => {
+                const quantity = Number(row.qty) || 0;
+                const total = Number(row.amount) || 0;
+                return {
+                    staffName: row.staff_name || (row.role === 'staff' ? 'Staff' : row.role || 'Unknown'),
+                    product: row.action || 'Order',
+                    quantity,
+                    price: quantity > 0 ? total / quantity : total,
+                    total
+                };
+            })
+            : logLines.flatMap((line) => {
             const parsed = parseReviewOrderRows(line);
             return parsed.length ? parsed.map((row) => ({
                 ...row,
@@ -1173,11 +1196,15 @@ if (btnSaveActivity) {
                 price: 0,
                 total: 0
             }];
-        });
+            });
+
+        const savedDetails = pendingRows.length
+            ? pendingRows.map((row) => `${row.staff_name || 'Staff'}: ${row.action || 'Order'} x${Number(row.qty) || 0} (₱${Number(row.amount) || 0})`).join('\n')
+            : logLines.join('\n');
 
         const entry = {
             date: new Date().toLocaleString(),
-            details: logLines.join('\n'),
+            details: savedDetails,
             rows: structuredRows,
             total: totalAmountToSave
         };
@@ -1199,9 +1226,6 @@ if (btnSaveActivity) {
                     throw new Error('Failed to save sales record');
                 }
                 
-                // MARKAHAN ANG LOGS NA "SAVED" NA SA DB (HINDI SILA MABUBURA SA DB, PERO HINDI NA ULIT LALABAS SA TEXTAREA)
-                await fetch('/api/activity/mark-saved', { method: 'POST' }).catch(() => {});
-
                 // I-refresh agad ang Daily, Monthly, at Yearly totals sa UI
                 const date = ownerSummaryDate?.value || getTodayDate();
                 await fetchSalesSummary(date);
@@ -1213,7 +1237,14 @@ if (btnSaveActivity) {
             } catch (error) {
                 console.error('Error saving to sales database:', error);
                 showToast('Failed to save total to database.', 'error');
+                return;
             }
+        }
+
+        // Keep the activity rows in the database as saved only after the sales save succeeded.
+        const markSavedResponse = await fetch('/api/activity/mark-saved', { method: 'POST' });
+        if (!markSavedResponse.ok) {
+            showToast('Orders were saved, but their record status could not be updated.', 'warning');
         }
 
         // 5. LINISIN ANG SCREEN AT STORAGE SA FRONTEND
@@ -1243,7 +1274,7 @@ function renderOwnerOrdersTable(rows = []) {
     if (!ownerOrdersTableBody) return;
 
     if (!rows.length) {
-        ownerOrdersTableBody.innerHTML = '<tr><td colspan="5">No recent orders yet.</td></tr>';
+        ownerOrdersTableBody.innerHTML = '<tr><td colspan="6">No recent orders yet.</td></tr>';
         return;
     }
 
@@ -1256,6 +1287,7 @@ function renderOwnerOrdersTable(rows = []) {
 
         return `
             <tr>
+                <td>${row.created_at ? new Date(row.created_at.replace(' ', 'T')).toLocaleString() : '—'}</td>
                 <td>${staffName}</td>
                 <td>${product}</td>
                 <td>${qty}</td>
