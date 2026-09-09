@@ -384,6 +384,62 @@ app.get('/api/staff/list', (req, res) => {
   });
 });
 
+// Update staff account and profile details (owner only)
+app.put('/api/staff/:id', (req, res) => {
+  const staffId = Number(req.params.id);
+  const { fullName, position, phone, email, address, username, password } = req.body;
+  const now = new Date().toISOString().replace('T', ' ').substring(0, 19);
+
+  if (!staffId || !fullName || !position || !phone || !email || !address || !username) {
+    return res.status(400).json({ error: 'Complete all required staff information fields' });
+  }
+
+  db.get(
+    `SELECT id, username FROM staff_accounts WHERE id = ?`,
+    [staffId],
+    (findErr, existingStaff) => {
+      if (findErr) return res.status(500).json({ error: findErr.message });
+      if (!existingStaff) return res.status(404).json({ error: 'Staff account not found' });
+
+      db.get(
+        `SELECT id FROM staff_accounts WHERE username = ? AND id != ?`,
+        [username, staffId],
+        (usernameErr, duplicate) => {
+          if (usernameErr) return res.status(500).json({ error: usernameErr.message });
+          if (duplicate) return res.status(400).json({ error: 'Username already exists' });
+
+          const hasPassword = typeof password === 'string' && password.trim().length > 0;
+          const accountSet = [
+            'username = ?',
+            ...(hasPassword ? ['password = ?'] : []),
+            'updated_at = ?'
+          ].join(', ');
+          const accountParams = [username, ...(hasPassword ? [password.trim()] : []), now, staffId];
+
+          db.run(
+            `UPDATE staff_accounts SET ${accountSet} WHERE id = ?`,
+            accountParams,
+            (accountErr) => {
+              if (accountErr) return res.status(500).json({ error: accountErr.message });
+
+              db.run(
+                `UPDATE staff_profiles
+                 SET full_name = ?, position = ?, phone = ?, email = ?, address = ?, updated_at = ?
+                 WHERE staff_id = ?`,
+                [fullName.trim(), position.trim(), phone.trim(), email.trim(), address.trim(), now, staffId],
+                (profileErr) => {
+                  if (profileErr) return res.status(500).json({ error: profileErr.message });
+                  res.json({ success: true, message: 'Staff information updated' });
+                }
+              );
+            }
+          );
+        }
+      );
+    }
+  );
+});
+
 // Delete staff account (owner only)
 app.delete('/api/staff/:id', (req, res) => {
   const staffId = req.params.id;

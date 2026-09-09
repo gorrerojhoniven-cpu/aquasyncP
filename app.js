@@ -43,6 +43,7 @@ const btnSaveActivity = document.getElementById('btn-save-activity');
 const btnReviewUndo = document.getElementById('btn-review-undo');
 const ownerReviewTotal = document.getElementById('owner-review-total');
 const ownerReviewList = document.getElementById('owner-review-list');
+const ownerOrdersTableBody = document.getElementById('owner-orders-table-body');
 const themeToggleBtn = document.getElementById('btn-theme-toggle');
 const authThemeToggleBtn = document.getElementById('btn-theme-toggle-auth');
 const themePreferenceKey = 'theme_preference';
@@ -497,6 +498,25 @@ function switchOwnerSection(sectionName) {
     sections.forEach((section) => {
         section.classList.toggle('hidden', section.dataset.ownerSectionContent !== sectionName);
     });
+
+    const ownerDashboardCard = document.getElementById('owner-dashboard');
+    if (ownerDashboardCard) {
+        ownerDashboardCard.classList.remove('mobile-menu-open');
+        const toggleButton = document.getElementById('owner-menu-toggle');
+        if (toggleButton) {
+            toggleButton.setAttribute('aria-expanded', 'false');
+        }
+    }
+}
+
+const ownerMenuToggle = document.getElementById('owner-menu-toggle');
+if (ownerMenuToggle) {
+    ownerMenuToggle.addEventListener('click', () => {
+        const ownerDashboardCard = document.getElementById('owner-dashboard');
+        if (!ownerDashboardCard) return;
+        const isOpen = ownerDashboardCard.classList.toggle('mobile-menu-open');
+        ownerMenuToggle.setAttribute('aria-expanded', String(isOpen));
+    });
 }
 
 document.querySelectorAll('.menu-item[data-owner-section]').forEach((item) => {
@@ -858,6 +878,93 @@ function downloadSavedActivityReview(index) {
     showToast('Saved activity downloaded.', 'success');
 }
 
+function parseReviewOrderRows(details = '') {
+    const rows = [];
+    const lines = String(details || '').split('\n').filter((line) => line.trim());
+
+    lines.forEach((line) => {
+        const match = line.match(/(?:\d{1,2}:\d{2}:\d{2}\s*[AP]M\s*[-–]\s*)?(.+?):\s*(.+?)\s*x(\d+)\s*\((?:₱)?([0-9]+(?:\.[0-9]{1,2})?)\)/i);
+        if (!match) {
+            const fallbackMatch = line.match(/(.+?):\s*(.+?)\s*(?:\(.*?\))?$/i);
+            if (!fallbackMatch) return;
+            rows.push({
+                staffName: fallbackMatch[1]?.trim() || 'Staff',
+                product: fallbackMatch[2]?.trim() || 'Order',
+                quantity: 1,
+                price: 0,
+                total: 0
+            });
+            return;
+        }
+
+        const [, staffName, product, quantity, totalText] = match;
+        const parsedQuantity = Number(quantity) || 0;
+        const parsedTotal = Number(totalText) || 0;
+        const unitPrice = parsedQuantity > 0 ? parsedTotal / parsedQuantity : parsedTotal;
+
+        rows.push({
+            staffName: (staffName || 'Staff').trim(),
+            product: (product || 'Order').trim(),
+            quantity: parsedQuantity,
+            price: unitPrice,
+            total: parsedTotal
+        });
+    });
+
+    return rows;
+}
+
+function renderSavedOrdersTable(rows = [], reviewDate = '', reviewIndex = null) {
+    const tableRows = rows.length
+        ? rows.map((row) => `
+            <tr>
+                <td>${reviewDate || '—'}</td>
+                <td>${row.staffName || 'Staff'}</td>
+                <td>${row.product || 'Order'}</td>
+                <td>${Number(row.quantity) || 0}</td>
+                <td>₱${Number(row.price || 0).toFixed(2)}</td>
+                <td>₱${Number(row.total || 0).toFixed(2)}</td>
+            </tr>
+        `).join('')
+        : '<tr><td colspan="6">No saved orders.</td></tr>';
+
+    const actions = reviewIndex !== null
+        ? `
+            <div class="review-actions-inline">
+                <button class="review-download-btn" data-index="${reviewIndex}" type="button">Download</button>
+                <button class="review-delete-btn" data-index="${reviewIndex}" type="button">Delete</button>
+            </div>
+        `
+        : '';
+
+    return `
+        <div class="review-item">
+            <div class="review-item-header">
+                <div>
+                    <div class="review-date">${reviewDate || 'Date not available'}</div>
+                    <div class="review-total-line">Total for entry: ${formatCurrency(rows.reduce((sum, row) => sum + Number(row.total || 0), 0))}</div>
+                </div>
+                ${actions}
+            </div>
+            <div class="orders-table-wrap">
+                <table class="orders-table" aria-label="Saved order rows">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Staff Name</th>
+                            <th>Product</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Total Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>${tableRows}</tbody>
+                </table>
+            </div>
+        </div>
+    `;
+}
+
 function renderReviewList() {
     const reviews = getSavedActivityReviews();
     if (!ownerReviewList) return;
@@ -868,21 +975,8 @@ function renderReviewList() {
     }
 
     const reviewHtml = reviews.map((review, index) => {
-        return `
-            <div class="review-item">
-                <div class="review-item-header">
-                    <div>
-                        <div class="review-date">${review.date}</div>
-                        <div class="review-total-line">Total for entry: ${formatCurrency(getReviewTotal(review))}</div>
-                    </div>
-                    <div class="review-actions-inline">
-                        <button class="review-download-btn" data-index="${index}" type="button">Download</button>
-                        <button class="review-delete-btn" data-index="${index}" type="button">Delete</button>
-                    </div>
-                </div>
-                <div class="review-details">${review.details.replace(/\n/g, '<br>')}</div>
-            </div>
-        `;
+        const parsedRows = Array.isArray(review.rows) && review.rows.length ? review.rows : parseReviewOrderRows(review.details || '');
+        return renderSavedOrdersTable(parsedRows, review.date, index);
     }).join('');
 
     ownerReviewList.innerHTML = reviewHtml;
@@ -1067,9 +1161,24 @@ if (btnSaveActivity) {
         const totalAmountToSave = parseActivityLogTotal(logLines);
 
         // 3. I-save muna sa local reviews list (History sa UI)
+        const structuredRows = logLines.flatMap((line) => {
+            const parsed = parseReviewOrderRows(line);
+            return parsed.length ? parsed.map((row) => ({
+                ...row,
+                total: Number(row.total || 0)
+            })) : [{
+                staffName: 'Staff',
+                product: line,
+                quantity: 1,
+                price: 0,
+                total: 0
+            }];
+        });
+
         const entry = {
             date: new Date().toLocaleString(),
             details: logLines.join('\n'),
+            rows: structuredRows,
             total: totalAmountToSave
         };
         addSavedActivityReview(entry);
@@ -1130,35 +1239,68 @@ if (btnSaveActivity) {
 let activityPollInterval = null;
 let lastActivitySignature = '';
 
+function renderOwnerOrdersTable(rows = []) {
+    if (!ownerOrdersTableBody) return;
+
+    if (!rows.length) {
+        ownerOrdersTableBody.innerHTML = '<tr><td colspan="5">No recent orders yet.</td></tr>';
+        return;
+    }
+
+    ownerOrdersTableBody.innerHTML = rows.map((row) => {
+        const staffName = row.staff_name || (row.role === 'staff' ? 'Staff' : row.role || 'Unknown');
+        const product = row.action || 'Unknown product';
+        const qty = Number(row.qty) || 0;
+        const total = Number(row.amount) || 0;
+        const unitPrice = qty > 0 ? total / qty : total;
+
+        return `
+            <tr>
+                <td>${staffName}</td>
+                <td>${product}</td>
+                <td>${qty}</td>
+                <td>₱${unitPrice.toFixed(2)}</td>
+                <td>₱${total.toFixed(2)}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
 async function fetchActivityLogs() {
     try {
         const resp = await fetch(`/api/activity?limit=20`);
         if (!resp.ok) throw new Error('Failed to load activity logs');
         const rows = await resp.json();
-        
-        // Lilikha ng lines gamit lang ang mga HINDI pa nai-save (is_saved = 0)
-        // Include staff name if available
-        const lines = rows.map(r => {
-            const staffName = r.staff_name ? r.staff_name : (r.role === 'staff' ? 'Staff' : r.role);
-            return `${new Date(r.created_at).toLocaleTimeString()} – ${staffName}: ${r.action} x${r.qty} (₱${r.amount})${r.note ? ' – ' + r.note : ''}`;
-        });
-        
+
         const activitySignature = rows.map((row) => `${row.created_at}|${row.staff_id}|${row.action}|${row.qty}|${row.amount}`).join('\n');
         if (activitySignature !== lastActivitySignature) {
             lastActivitySignature = activitySignature;
-            if (ownerActivityLog) {
-                ownerActivityLog.value = lines.length ? lines.join('\n') : '';
-            }
+            renderOwnerOrdersTable(rows);
             if (ownerMonitorStatus) {
-                ownerMonitorStatus.innerText = lines.length ? `Last action: ${lines[0]}` : 'Owner monitor is ready. Waiting for staff actions...';
+                const lastOrder = rows[0];
+                if (lastOrder) {
+                    const staffName = lastOrder.staff_name || 'Staff';
+                    const product = lastOrder.action || 'Order';
+                    const total = Number(lastOrder.amount) || 0;
+                    ownerMonitorStatus.innerText = `Last order: ${staffName} • ${product} • ₱${total.toFixed(2)}`;
+                } else {
+                    ownerMonitorStatus.innerText = 'Owner monitor is ready. Waiting for staff actions...';
+                }
             }
         }
         await loadSharedDashboardState('owner');
     } catch (err) {
-        // fallback to local log if server not reachable
         const logLines = JSON.parse(localStorage.getItem('staff-activity-log') || '[]');
-        if (!lastActivitySignature && ownerActivityLog) {
-            ownerActivityLog.value = logLines.length ? logLines.slice(0, 8).join('\n') : '';
+        if (!lastActivitySignature && ownerOrdersTableBody) {
+            const fallbackRows = logLines.map((line) => ({
+                role: 'staff',
+                action: line.split('•')[1]?.trim() || 'Order',
+                qty: 1,
+                amount: 0,
+                staff_name: 'Staff',
+                created_at: new Date().toISOString()
+            }));
+            renderOwnerOrdersTable(fallbackRows);
         }
         if (!lastActivitySignature && ownerMonitorStatus) {
             ownerMonitorStatus.innerText = getMonitorStatus(JSON.parse(localStorage.getItem('dashboard-values') || '{}'));
@@ -1209,11 +1351,43 @@ async function loadAllSavedLogs() {
             return;
         }
 
-        allLogsContent.innerText = rows.map((row) => {
+        const rowsHtml = rows.map((row) => {
             const time = new Date(row.created_at).toLocaleString();
             const staffName = row.staff_name ? row.staff_name : (row.role === 'staff' ? 'Staff' : row.role);
-            return `[${time}] ${staffName}: ${row.action} x${row.qty} (₱${row.amount})${row.note ? ' - ' + row.note : ''}`;
-        }).join('\n');
+            const product = row.action || 'Order';
+            const quantity = Number(row.qty) || 0;
+            const price = Number(row.amount || 0) / (quantity || 1);
+            const total = Number(row.amount || 0);
+
+            return `
+                <tr>
+                    <td>${time}</td>
+                    <td>${staffName}</td>
+                    <td>${product}</td>
+                    <td>${quantity}</td>
+                    <td>₱${price.toFixed(2)}</td>
+                    <td>₱${total.toFixed(2)}</td>
+                </tr>
+            `;
+        }).join('');
+
+        allLogsContent.innerHTML = `
+            <div class="orders-table-wrap">
+                <table class="orders-table" aria-label="All saved records table">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Staff Name</th>
+                            <th>Product</th>
+                            <th>Quantity</th>
+                            <th>Price</th>
+                            <th>Total Price</th>
+                        </tr>
+                    </thead>
+                    <tbody>${rowsHtml || '<tr><td colspan="6">No saved records.</td></tr>'}</tbody>
+                </table>
+            </div>
+        `;
     } catch (error) {
         console.error(error);
         allLogsContent.innerText = 'Error loading logs from database.';
@@ -1286,6 +1460,17 @@ const staffCreateUsername = document.getElementById('staff-create-username');
 const staffCreatePassword = document.getElementById('staff-create-password');
 const staffCreateStatus = document.getElementById('staff-create-status');
 const staffListContainer = document.getElementById('staff-list-container');
+const staffEditPanel = document.getElementById('staff-edit-panel');
+const staffEditId = document.getElementById('staff-edit-id');
+const staffEditFullName = document.getElementById('staff-edit-full-name');
+const staffEditPosition = document.getElementById('staff-edit-position');
+const staffEditPhone = document.getElementById('staff-edit-phone');
+const staffEditEmail = document.getElementById('staff-edit-email');
+const staffEditAddress = document.getElementById('staff-edit-address');
+const staffEditUsername = document.getElementById('staff-edit-username');
+const staffEditPassword = document.getElementById('staff-edit-password');
+const btnSaveStaffEdit = document.getElementById('btn-save-staff-edit');
+const btnCancelStaffEdit = document.getElementById('btn-cancel-staff-edit');
 
 if (btnManageStaff) {
     btnManageStaff.addEventListener('click', () => {
@@ -1347,6 +1532,35 @@ if (btnCreateStaff) {
     });
 }
 
+function resetStaffEditForm() {
+    if (!staffEditPanel) return;
+    staffEditPanel.hidden = true;
+    if (staffEditId) staffEditId.value = '';
+    if (staffEditFullName) staffEditFullName.value = '';
+    if (staffEditPosition) staffEditPosition.value = '';
+    if (staffEditPhone) staffEditPhone.value = '';
+    if (staffEditEmail) staffEditEmail.value = '';
+    if (staffEditAddress) staffEditAddress.value = '';
+    if (staffEditUsername) staffEditUsername.value = '';
+    if (staffEditPassword) staffEditPassword.value = '';
+}
+
+function openStaffEditForm(staff) {
+    if (!staffEditPanel || !staffEditId || !staffEditFullName || !staffEditPosition || !staffEditPhone || !staffEditEmail || !staffEditAddress || !staffEditUsername) {
+        return;
+    }
+
+    staffEditId.value = String(staff.id ?? '');
+    staffEditFullName.value = staff.full_name || '';
+    staffEditPosition.value = staff.position || '';
+    staffEditPhone.value = staff.phone || '';
+    staffEditEmail.value = staff.email || '';
+    staffEditAddress.value = staff.address || '';
+    staffEditUsername.value = staff.username || '';
+    staffEditPassword.value = '';
+    staffEditPanel.hidden = false;
+}
+
 async function loadStaffList() {
     try {
         const response = await fetch('/api/staff/list');
@@ -1354,19 +1568,36 @@ async function loadStaffList() {
 
         if (!staff || staff.length === 0) {
             staffListContainer.innerHTML = '<p style="color: #999; text-align: center;">No staff accounts yet.</p>';
+            resetStaffEditForm();
             return;
         }
 
-        staffListContainer.innerHTML = staff.map(s => `
+        staffListContainer.innerHTML = staff.map((s) => `
             <div style="background: #222; padding: 10px; margin-bottom: 8px; border-radius: 4px; display: flex; justify-content: space-between; align-items: center; gap: 12px;">
                 <div>
                     <strong style="color: #38bdf8;">${s.full_name || 'Name not available'}</strong>
                     <div style="font-size: 0.85rem; color: #ddd;">${s.position || 'Position not available'} · ${s.phone || 'No phone'}</div>
                     <div style="font-size: 0.8rem; color: #999;">Username: ${s.username} · ${s.email || 'No email'} · Created: ${new Date(s.created_at).toLocaleDateString()}</div>
                 </div>
-                <button onclick="deleteStaffAccount(${s.id})" class="danger-btn" type="button" style="padding: 4px 12px; font-size: 0.85rem;">Delete</button>
+                <div style="display: flex; gap: 8px;">
+                    <button class="staff-edit-btn secondary-btn" type="button" data-staff-id="${s.id}" style="padding: 4px 12px; font-size: 0.85rem;">Edit</button>
+                    <button class="staff-delete-btn danger-btn" type="button" data-staff-id="${s.id}" style="padding: 4px 12px; font-size: 0.85rem;">Delete</button>
+                </div>
             </div>
         `).join('');
+
+        staffListContainer.querySelectorAll('.staff-edit-btn').forEach((button) => {
+            button.addEventListener('click', () => {
+                const selectedStaff = staff.find((entry) => String(entry.id) === String(button.dataset.staffId));
+                if (selectedStaff) openStaffEditForm(selectedStaff);
+            });
+        });
+
+        staffListContainer.querySelectorAll('.staff-delete-btn').forEach((button) => {
+            button.addEventListener('click', () => {
+                deleteStaffAccount(Number(button.dataset.staffId));
+            });
+        });
     } catch (error) {
         staffListContainer.innerHTML = `<p style="color: #f87171;">Error loading staff: ${error.message}</p>`;
     }
@@ -1384,6 +1615,7 @@ async function deleteStaffAccount(staffId) {
 
         if (response.ok) {
             showToast('Staff account deleted.', 'success');
+            resetStaffEditForm();
             loadStaffList();
         } else {
             const data = await response.json();
@@ -1392,6 +1624,50 @@ async function deleteStaffAccount(staffId) {
     } catch (error) {
         showToast(`Delete error: ${error.message}`, 'error');
     }
+}
+
+if (btnCancelStaffEdit) {
+    btnCancelStaffEdit.addEventListener('click', resetStaffEditForm);
+}
+
+if (btnSaveStaffEdit) {
+    btnSaveStaffEdit.addEventListener('click', async () => {
+        const staffId = staffEditId.value.trim();
+        const fullName = staffEditFullName.value.trim();
+        const position = staffEditPosition.value.trim();
+        const phone = staffEditPhone.value.trim();
+        const email = staffEditEmail.value.trim();
+        const address = staffEditAddress.value.trim();
+        const username = staffEditUsername.value.trim();
+        const password = staffEditPassword.value.trim();
+
+        if (!staffId || !fullName || !position || !phone || !email || !address || !username) {
+            showToast('Please complete all required staff fields.', 'error');
+            return;
+        }
+
+        const payload = { fullName, position, phone, email, address, username };
+        if (password) payload.password = password;
+
+        try {
+            const response = await fetch(`/api/staff/${staffId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                throw new Error(data.error || 'Unable to update staff account');
+            }
+
+            showToast('Staff information updated.', 'success');
+            resetStaffEditForm();
+            loadStaffList();
+        } catch (error) {
+            showToast(`Update error: ${error.message}`, 'error');
+        }
+    });
 }
 
 // ==================== STAFF PROFILE (STAFF ONLY) ====================
