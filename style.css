@@ -30,11 +30,25 @@
     box-sizing: border-box;
 }
 
+html, body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
 body {
     margin: 0;
     min-height: 100vh;
     background: linear-gradient(135deg, var(--bg) 0%, #0f172a 100%);
     color: var(--text-primary);
+}
+
+img, canvas, svg, video, table {
+    max-width: 100%;
+}
+
+button, input, textarea, select {
+    font-size: 16px;
 }
 
 body.theme-light {
@@ -1142,6 +1156,10 @@ button, input, textarea {
 }
 
 @media (max-width: 720px) {
+    html, body {
+        overflow-x: hidden;
+    }
+
     .app-shell {
         padding: 8px;
     }
@@ -1155,6 +1173,25 @@ button, input, textarea {
 
     .dashboard-card {
         padding: 16px;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .dashboard-container,
+    .owner-content,
+    .owner-layout,
+    .owner-sidebar {
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+
+    .owner-sidebar {
+        left: 8px;
+        right: 8px;
+        width: auto;
+        max-width: calc(100vw - 16px);
     }
 
     .dashboard-heading h2 {
@@ -1270,6 +1307,10 @@ button, input, textarea {
         width: 100% !important;
         border-radius: 12px !important;
     }
+
+    .orders-table {
+        min-width: 560px;
+    }
 }
 
 @media (max-width: 480px) {
@@ -1279,6 +1320,26 @@ button, input, textarea {
 
     .sales-summary-grid {
         grid-template-columns: 1fr !important;
+    }
+
+    .brand {
+        flex-wrap: wrap;
+    }
+
+    .brand h1 {
+        font-size: 0.9rem;
+    }
+
+    .brand p {
+        font-size: 0.72rem;
+    }
+
+    .owner-monitor-card {
+        padding: 12px !important;
+    }
+
+    .orders-table {
+        min-width: 500px;
     }
 }
 
