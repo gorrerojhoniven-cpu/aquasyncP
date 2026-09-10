@@ -12,19 +12,10 @@
 
 <body>
     <div id="app-shell" class="app-shell">
-        <header class="topbar">
-            <div class="brand">
-                <div class="brand-mark">A</div>
-                <div>
-                    <h1>AquaSync Control</h1>
-                    <p>Sales, inventory, and staff management</p>
-                </div>
-            </div>
-            <div class="topbar-actions">
-                <button id="btn-theme-toggle" class="secondary-btn" type="button">☀️ Light mode</button>
-                <button id="btn-logout" class="logout-btn hidden" type="button">Logout</button>
-            </div>
-        </header>
+        <div class="topbar-actions">
+            <button id="btn-theme-toggle" class="secondary-btn" type="button">☀️ Light mode</button>
+            <button id="btn-logout" class="logout-btn hidden" type="button">Logout</button>
+        </div>
 
         <div id="toast-container" class="toast-container"></div>
 
@@ -196,12 +187,51 @@
 
             <!-- ================= STAFF DASHBOARD (NAKA-TAGO SA SIMULA) ================= -->
             <section id="staff-dashboard" class="dashboard-card hidden staff-pos-card">
+                <div class="staff-menu-wrap">
+                    <div class="dashboard-brand staff-dashboard-brand">
+                        <button id="staff-menu-toggle" class="mobile-menu-toggle" type="button" aria-label="Toggle staff menu" aria-expanded="false">☰ Menu</button>
+                        <div class="dashboard-brand-info">
+                            <div class="brand-mark">A</div>
+                            <div>
+                                <h1>AquaSync Control</h1>
+                                <p>Sales, inventory, and staff management</p>
+                            </div>
+                        </div>
+                    </div>
+                    <nav id="staff-dashboard-menu" class="staff-dashboard-menu hidden" aria-label="Staff dashboard menu">
+                        <button type="button" class="staff-menu-item" data-staff-action="product-overview">Product overview</button>
+                        <button type="button" class="staff-menu-item" data-staff-action="orders">My orders</button>
+                        <button id="btn-staff-settings" type="button" class="staff-menu-item">Settings</button>
+                    </nav>
+                </div>
                 <div class="dashboard-heading">
                     <p class="eyebrow">Staff POS Simulator</p>
                     <h2>Record a staff transaction</h2>
                     <p>Choose what happened, enter the quantity, and save it. The inventory snapshot updates after a saved transaction.</p>
-                    <button id="btn-staff-profile" class="secondary-btn" type="button"
-                        style="margin-top: 10px; float: right;">👤 My Profile</button>
+                </div>
+
+                <div id="staff-orders-panel" class="staff-orders-panel hidden">
+                    <div class="staff-orders-header">
+                        <h3>My orders</h3>
+                        <button id="btn-refresh-staff-orders" class="secondary-btn" type="button">Refresh</button>
+                    </div>
+                    <div class="orders-table-wrap">
+                        <table class="orders-table" aria-label="My orders table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Staff Name</th>
+                                    <th>Product</th>
+                                    <th>Quantity</th>
+                                    <th>Price</th>
+                                    <th>Total Price</th>
+                                </tr>
+                            </thead>
+                            <tbody id="staff-orders-list">
+                                <tr><td colspan="6">No orders yet.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
 
                 <div class="pos-section">
@@ -220,7 +250,7 @@
                         </article>
                         <article class="action-card">
                             <div class="action-card-header">
-                                <span class="action-label">New Jug + Water Combo</span>
+                                <span class="action-label">New Jug with Water Refill</span>
                                 <span class="action-price">₱225.00</span>
                             </div>
                             <div class="action-card-body">
@@ -260,6 +290,23 @@
                     </div>
                 </div>
 
+                <div class="staff-order-summary">
+                    <div class="step-pill">2</div>
+                    <div>
+                        <div class="summary-label">2. Check the transaction</div>
+                        <div class="summary-value" id="staged-action-text">No quantities selected yet.</div>
+                        <div id="staged-actions-list" class="staged-actions-list" aria-live="polite"></div>
+                    </div>
+                </div>
+
+                <div class="staff-order-summary confirm-section">
+                    <div class="step-pill">3</div>
+                    <div>
+                        <div class="summary-label">3. Save the transaction</div>
+                        <button type="button" class="confirm-btn">Confirm and save transaction →</button>
+                    </div>
+                </div>
+
                 <div class="owner-sales-panel staff-summary-panel">
                     <div class="owner-summary-header">
                         <div class="sales-title">Current inventory</div>
@@ -281,23 +328,6 @@
                             <span>Jugs with customers</span>
                             <strong id="staff-borrowed">0</strong>
                         </article>
-                    </div>
-                </div>
-
-                <div class="staff-order-summary">
-                    <div class="step-pill">2</div>
-                    <div>
-                        <div class="summary-label">2. Check the transaction</div>
-                        <div class="summary-value" id="staged-action-text">No quantities selected yet.</div>
-                        <div id="staged-actions-list" class="staged-actions-list" aria-live="polite"></div>
-                    </div>
-                </div>
-
-                <div class="staff-order-summary confirm-section">
-                    <div class="step-pill">3</div>
-                    <div>
-                        <div class="summary-label">3. Save the transaction</div>
-                        <button type="button" class="confirm-btn">Confirm and save transaction →</button>
                     </div>
                 </div>
             </section>
@@ -401,23 +431,9 @@
     <dialog id="modal-staff-profile"
         style="padding: 20px; border-radius: 8px; border: 1px solid #444; background: #1e1e2e; color: #fff; max-width: 600px; width: 95%;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <h3 style="margin: 0; font-size: 1.1rem;">👤 My Profile</h3>
+            <h3 style="margin: 0; font-size: 1.1rem;">⚙️ Settings</h3>
             <button id="btn-close-profile-modal" type="button"
                 style="background: transparent; border: none; color: #fff; font-size: 1.2rem; cursor: pointer;">✕</button>
-        </div>
-
-        <!-- Profile Photo Section -->
-        <div
-            style="background: #11111b; padding: 15px; border-radius: 6px; margin-bottom: 15px; border: 1px solid #333; text-align: center;">
-            <h4 style="margin-top: 0; color: #38bdf8;">Profile Photo</h4>
-            <div id="staff-photo-display"
-                style="width: 120px; height: 120px; margin: 0 auto 15px; border-radius: 8px; background: #222; border: 2px solid #38bdf8; display: flex; align-items: center; justify-content: center; color: #666; font-size: 3rem; overflow: hidden;">
-                📷
-            </div>
-            <input id="staff-photo-input" type="file" accept="image/*" style="margin-bottom: 10px;">
-            <button id="btn-upload-photo" class="primary-btn" type="button" style="padding: 8px 16px;">Upload
-                Photo</button>
-            <div id="staff-photo-status" style="color: #38bdf8; font-size: 0.9rem; margin-top: 10px;"></div>
         </div>
 
         <!-- Change Password Section -->

@@ -766,6 +766,113 @@ button, input, textarea {
     background: var(--pos-card-bg);
 }
 
+.staff-menu-wrap {
+    position: relative;
+    width: 100%;
+    margin-bottom: 18px;
+}
+
+.staff-dashboard-brand {
+    padding: 4px 8px 18px;
+}
+
+.staff-dashboard-brand .mobile-menu-toggle {
+    display: inline-flex;
+    flex-shrink: 0;
+}
+
+.staff-dashboard-brand .dashboard-brand-info {
+    flex: 1;
+}
+
+.staff-dashboard-menu {
+    position: absolute;
+    top: 62px;
+    left: 8px;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: min(220px, 80vw);
+    padding: 12px;
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    background: var(--card-bg);
+    box-shadow: var(--shadow);
+}
+
+.staff-dashboard-menu > #btn-theme-toggle,
+.staff-menu-item {
+    width: 100%;
+    padding: 9px 10px;
+    border: 1px solid var(--panel-border);
+    border-radius: 8px;
+    background: rgba(148, 163, 184, 0.14);
+    color: var(--text-primary);
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.84rem;
+    font-weight: 700;
+    text-align: left;
+}
+
+.staff-dashboard-menu > #btn-theme-toggle {
+    align-self: flex-end;
+    width: auto;
+    padding: 6px 8px;
+    font-size: 0.72rem;
+}
+
+.staff-dashboard-menu > #btn-logout {
+    width: 100%;
+    margin-top: 8px;
+    padding: 9px 10px;
+    border: 1px solid #fca5a5;
+    border-radius: 8px;
+    background: rgba(248, 113, 113, 0.16);
+    color: #fecaca;
+    cursor: pointer;
+    font: inherit;
+    font-size: 0.84rem;
+    font-weight: 700;
+    text-align: left;
+}
+
+.staff-menu-item:hover,
+.staff-dashboard-menu > #btn-theme-toggle:hover,
+.staff-dashboard-menu > #btn-logout:hover {
+    background: var(--button-accent);
+    color: #042f2e;
+}
+
+.staff-orders-panel {
+    margin: 0 0 20px;
+    padding: 16px;
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    background: var(--surface);
+}
+
+.staff-orders-mode > :not(.staff-menu-wrap):not(.staff-orders-panel) {
+    display: none;
+}
+
+.staff-orders-mode .staff-menu-wrap {
+    margin-bottom: 18px;
+}
+
+.staff-orders-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.staff-orders-header h3 {
+    margin: 0;
+}
+
 .pos-section {
     margin-top: 22px;
 }
@@ -1308,8 +1415,49 @@ button, input, textarea {
         border-radius: 12px !important;
     }
 
-    .orders-table {
-        min-width: 560px;
+    .review-item .orders-table {
+        min-width: 0;
+    }
+
+    .review-item .orders-table thead {
+        display: none;
+    }
+
+    .review-item .orders-table,
+    .review-item .orders-table tbody,
+    .review-item .orders-table tr,
+    .review-item .orders-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .review-item .orders-table tr {
+        padding: 8px 0;
+        border-bottom: 1px solid var(--panel-border);
+    }
+
+    .review-item .orders-table tr:last-child {
+        border-bottom: none;
+    }
+
+    .review-item .orders-table td {
+        display: flex;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 7px 10px;
+        text-align: right;
+        font-size: 0.86rem;
+    }
+
+    .review-item .orders-table td::before {
+        content: attr(data-label);
+        flex: 0 0 auto;
+        color: var(--text-secondary);
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-align: left;
+        text-transform: uppercase;
     }
 }
 
@@ -1618,10 +1766,42 @@ body.theme-light {
     align-items: stretch;
     gap: 8px;
     width: 100%;
-    padding: 10px;
+    position: relative;
+    padding: 52px 10px 10px;
     border: 1px solid var(--panel-border);
     border-radius: 14px;
     background: var(--bg-alt);
+}
+
+.dashboard-menu .topbar-actions {
+    position: static;
+    display: block;
+    width: 100%;
+    margin-top: 16px;
+    padding-top: 12px;
+    border-top: 1px solid var(--panel-border);
+}
+
+.dashboard-menu .topbar-actions #btn-theme-toggle {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: auto;
+    max-width: 96px;
+    padding: 5px 7px;
+    border-radius: 8px;
+    font-size: 0.68rem;
+    line-height: 1.15;
+    white-space: nowrap;
+}
+
+.dashboard-menu .topbar-actions #btn-logout {
+    display: block;
+    width: 100%;
+    margin-top: 10px;
+    padding: 9px 8px;
+    border-radius: 8px;
+    font-size: 0.82rem;
 }
 
 .owner-layout {
@@ -1882,14 +2062,14 @@ dialog::backdrop {
         position: fixed;
         top: 18px;
         left: 12px;
-        width: min(280px, 78vw);
+        width: min(230px, 72vw);
         height: calc(100vh - 36px);
         z-index: 50;
         background: rgba(15, 23, 42, 0.96);
         border: 1px solid var(--panel-border);
         border-radius: 18px;
         box-shadow: var(--shadow);
-        padding: 12px;
+        padding: 8px;
         transform: translateX(-120%);
         transition: transform 0.25s ease;
         overflow-y: auto;
@@ -1908,19 +2088,21 @@ dialog::backdrop {
     }
 
     .dashboard-menu {
-        gap: 6px;
-        padding: 8px;
+        gap: 4px;
+        padding: 52px 4px 4px;
         min-height: 100%;
     }
 
     .menu-heading {
         margin-right: 0;
-        padding: 8px 10px;
+        padding: 6px 8px;
+        font-size: 0.72rem;
     }
 
     .menu-item {
         width: 100%;
-        padding: 12px 10px;
+        padding: 9px 8px;
+        font-size: 0.82rem;
     }
 }
 
@@ -1940,6 +2122,13 @@ dialog::backdrop {
         align-items: center;
         gap: 8px;
         padding: 2px 2px 14px;
+    }
+
+    .mobile-menu-toggle {
+        max-width: 138px;
+        padding: 7px 9px;
+        font-size: 0.82rem;
+        white-space: nowrap;
     }
 
     .dashboard-brand .topbar-actions {
@@ -2051,4 +2240,42 @@ dialog::backdrop {
     font-size: 0.88rem;
     border: 1px solid var(--panel-border);
     line-height: 1.5;
+}
+
+body.theme-light .secondary-btn,
+body.theme-light #btn-theme-toggle,
+body.theme-light #btn-theme-toggle-auth {
+    background: #e2e8f0;
+    border: 1px solid #94a3b8;
+    color: #1e293b;
+}
+
+body.theme-light .secondary-btn:hover,
+body.theme-light #btn-theme-toggle:hover,
+body.theme-light #btn-theme-toggle-auth:hover {
+    background: #cbd5e1;
+    color: #0f172a;
+}
+
+body.theme-light .menu-item {
+    color: #334155;
+}
+
+body.theme-light .menu-item:hover,
+body.theme-light .menu-item.active {
+    background: #0f766e;
+    color: #ffffff;
+}
+
+body.theme-light button:disabled {
+    border-color: #cbd5e1;
+    background: #e5e7eb;
+    color: #64748b;
+    opacity: 1;
+}
+
+body.theme-light .logout-btn {
+    border: 1px solid #fca5a5;
+    background: #fee2e2;
+    color: #991b1b;
 }

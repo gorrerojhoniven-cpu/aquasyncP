@@ -552,3 +552,20 @@ app.post('/api/staff/:id/profile-photo', (req, res) => {
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
+
+app.get('/api/activity/staff/:staffId', (req, res) => {
+  const staffId = Number(req.params.staffId);
+  if (!Number.isInteger(staffId) || staffId < 1) return res.status(400).json({ error: 'Invalid staff id' });
+
+  db.all(
+    `SELECT action, qty, amount, note, created_at
+     FROM activity_logs
+     WHERE staff_id = ?
+     ORDER BY created_at DESC LIMIT 50`,
+    [staffId],
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json(rows);
+    }
+  );
+});

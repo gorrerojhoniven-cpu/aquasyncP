@@ -229,6 +229,10 @@ function saveDashboardValues(values) {
     localStorage.setItem('dashboard-values', JSON.stringify(values));
 }
 
+function saveLatestOwnerUndoState(values) {
+    localStorage.setItem('owner-history', JSON.stringify([values]));
+}
+
 async function loadSharedDashboardState(role = loggedInRole) {
     try {
         const response = await fetch('/api/dashboard-state');
@@ -465,9 +469,16 @@ function showDashboard(role) {
     document.getElementById('app-shell').classList.toggle('owner-session', role === 'owner');
     authOverlay.classList.add('hidden');
     btnLogout.classList.remove('hidden');
-    const dashboardBrand = document.querySelector('.dashboard-brand');
-    if (role === 'owner' && dashboardBrand) {
-        dashboardBrand.appendChild(document.querySelector('.topbar-actions'));
+    const dashboardMenu = document.getElementById(role === 'owner' ? 'owner-dashboard-menu' : 'staff-dashboard-menu');
+    const topbarActions = document.querySelector('.topbar-actions');
+    if (dashboardMenu && topbarActions) {
+        if (role === 'staff') {
+            dashboardMenu.prepend(themeToggleBtn);
+            dashboardMenu.appendChild(btnLogout);
+            topbarActions.classList.add('hidden');
+        } else {
+            dashboardMenu.appendChild(topbarActions);
+        }
     }
     ownerDashboard.classList.toggle('hidden', role !== 'owner');
     staffDashboard.classList.toggle('hidden', role !== 'staff');
@@ -535,7 +546,11 @@ function hideDashboard() {
     document.getElementById('app-shell').classList.remove('owner-session');
     const topbar = document.querySelector('.topbar');
     const topbarActions = document.querySelector('.topbar-actions');
-    if (topbar && topbarActions) topbar.appendChild(topbarActions);
+    if (topbar && topbarActions) {
+        topbarActions.classList.remove('hidden');
+        topbarActions.append(themeToggleBtn, btnLogout);
+        topbar.appendChild(topbarActions);
+    }
     loggedInStaffId = null;
     loggedInStaffUsername = null;
     authOverlay.classList.remove('hidden');
@@ -686,6 +701,10 @@ saveOwnerBtn.addEventListener('click', async () => {
     inputs.forEach((input) => {
         values[input.dataset.stat] = Number(input.value) || 0;
     });
+    const currentValues = getStoredDashboardValues();
+    if (JSON.stringify(currentValues) !== JSON.stringify(values)) {
+        saveLatestOwnerUndoState(currentValues);
+    }
     try {
         await saveSharedDashboardState(values);
         configureDashboardView('owner');
@@ -723,9 +742,7 @@ ownerResetBtn.addEventListener('click', async () => {
     }
 
     const currentValues = JSON.parse(localStorage.getItem('dashboard-values') || '{}');
-    const history = JSON.parse(localStorage.getItem('owner-history') || '[]');
-    history.push(currentValues);
-    localStorage.setItem('owner-history', JSON.stringify(history.slice(-10)));
+    saveLatestOwnerUndoState(currentValues);
 
     const resetValues = { revenue: 0, water: 0, containers: 0, borrowed: 0 };
     try {
@@ -748,8 +765,8 @@ ownerUndoBtn.addEventListener('click', async () => {
         return;
     }
 
-    const previousState = history.pop();
-    localStorage.setItem('owner-history', JSON.stringify(history));
+    const previousState = history[history.length - 1];
+    localStorage.removeItem('owner-history');
     try {
         await saveSharedDashboardState(previousState);
         configureDashboardView('owner');
@@ -918,12 +935,12 @@ function renderSavedOrdersTable(rows = [], reviewDate = '', reviewIndex = null) 
     const tableRows = rows.length
         ? rows.map((row) => `
             <tr>
-                <td>${reviewDate || '—'}</td>
-                <td>${row.staffName || 'Staff'}</td>
-                <td>${row.product || 'Order'}</td>
-                <td>${Number(row.quantity) || 0}</td>
-                <td>₱${Number(row.price || 0).toFixed(2)}</td>
-                <td>₱${Number(row.total || 0).toFixed(2)}</td>
+                <td data-label="Date">${reviewDate || '—'}</td>
+                <td data-label="Staff">${row.staffName || 'Staff'}</td>
+                <td data-label="Product">${row.product || 'Order'}</td>
+                <td data-label="Quantity">${Number(row.quantity) || 0}</td>
+                <td data-label="Price">₱${Number(row.price || 0).toFixed(2)}</td>
+                <td data-label="Total">₱${Number(row.total || 0).toFixed(2)}</td>
             </tr>
         `).join('')
         : '<tr><td colspan="6">No saved orders.</td></tr>';
@@ -1033,9 +1050,7 @@ function postActivityLog(activity) {
 function simulateStaffAction(actionLabel, quantity, totalCash) {
     const currentValues = JSON.parse(localStorage.getItem('dashboard-values') || '{}');
     const previousState = { ...currentValues };
-    const history = JSON.parse(localStorage.getItem('owner-history') || '[]');
-    history.push(previousState);
-    localStorage.setItem('owner-history', JSON.stringify(history.slice(-10)));
+    saveLatestOwnerUndoState(previousState);
 
     currentValues.revenue = Number(currentValues.revenue || 0) + totalCash;
     currentValues.water = Math.max(0, Number(currentValues.water || 0) - quantity);
@@ -1116,6 +1131,7 @@ if (confirmOrderBtn) {
                 return postActivityLog({ role: 'staff', action: action.label, qty: action.qty, amount: action.totalCash, note: 'Action confirmed' });
             }));
 
+            saveLatestOwnerUndoState(getStoredDashboardValues());
             const stateResponse = await fetch('/api/dashboard-state/transactions', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1320,7 +1336,6 @@ async function fetchActivityLogs() {
                 }
             }
         }
-        await loadSharedDashboardState('owner');
     } catch (err) {
         const logLines = JSON.parse(localStorage.getItem('staff-activity-log') || '[]');
         if (!lastActivitySignature && ownerOrdersTableBody) {
@@ -1705,6 +1720,12 @@ if (btnSaveStaffEdit) {
 // ==================== STAFF PROFILE (STAFF ONLY) ====================
 const modalStaffProfile = document.getElementById('modal-staff-profile');
 const btnStaffProfile = document.getElementById('btn-staff-profile');
+const staffMenuToggle = document.getElementById('staff-menu-toggle');
+const staffDashboardMenu = document.getElementById('staff-dashboard-menu');
+const staffOrdersPanel = document.getElementById('staff-orders-panel');
+const staffOrdersList = document.getElementById('staff-orders-list');
+const btnRefreshStaffOrders = document.getElementById('btn-refresh-staff-orders');
+const btnStaffSettings = document.getElementById('btn-staff-settings');
 const btnCloseProfileModal = document.getElementById('btn-close-profile-modal');
 const staffPhotoDisplay = document.getElementById('staff-photo-display');
 const staffPhotoInput = document.getElementById('staff-photo-input');
@@ -1719,9 +1740,78 @@ const staffPasswordStatus = document.getElementById('staff-password-status');
 if (btnStaffProfile) {
     btnStaffProfile.addEventListener('click', () => {
         modalStaffProfile.showModal();
-        loadStaffProfile();
     });
 }
+
+if (staffMenuToggle && staffDashboardMenu) {
+    staffMenuToggle.addEventListener('click', () => {
+        const isOpen = staffDashboardMenu.classList.toggle('hidden') === false;
+        staffMenuToggle.setAttribute('aria-expanded', String(isOpen));
+    });
+}
+
+if (btnStaffSettings && modalStaffProfile) {
+    btnStaffSettings.addEventListener('click', () => {
+        modalStaffProfile.showModal();
+        staffDashboardMenu?.classList.add('hidden');
+        staffMenuToggle?.setAttribute('aria-expanded', 'false');
+    });
+}
+
+async function loadStaffOrders() {
+    if (!staffOrdersList || !loggedInStaffId) return;
+    staffOrdersList.innerHTML = '<tr><td colspan="6">Loading orders...</td></tr>';
+    try {
+        const response = await fetch(`/api/activity/staff/${loggedInStaffId}`);
+        if (!response.ok) throw new Error('Unable to load orders');
+        const orders = await response.json();
+        if (!orders.length) {
+            staffOrdersList.innerHTML = '<tr><td colspan="6">No orders yet.</td></tr>';
+            return;
+        }
+        staffOrdersList.innerHTML = orders.map((order) => {
+            const quantity = Number(order.qty) || 0;
+            const total = Number(order.amount) || 0;
+            const date = order.created_at ? new Date(order.created_at.replace(' ', 'T')).toLocaleString() : '—';
+            const unitPrice = quantity > 0 ? total / quantity : total;
+            return `
+            <tr>
+                <td>${date}</td>
+                <td>${loggedInStaffUsername || 'Staff'}</td>
+                <td>${order.action || 'Order'}</td>
+                <td>${quantity}</td>
+                <td>₱${unitPrice.toFixed(2)}</td>
+                <td>₱${total.toFixed(2)}</td>
+            </tr>
+        `;
+        }).join('');
+    } catch (error) {
+        staffOrdersList.innerHTML = '<tr><td colspan="6">Unable to load orders right now.</td></tr>';
+    }
+}
+
+document.querySelectorAll('[data-staff-action="orders"]').forEach((button) => {
+    button.addEventListener('click', () => {
+        staffDashboard?.classList.add('staff-orders-mode');
+        staffOrdersPanel?.classList.remove('hidden');
+        staffOrdersPanel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        staffDashboardMenu?.classList.add('hidden');
+        staffMenuToggle?.setAttribute('aria-expanded', 'false');
+        loadStaffOrders();
+    });
+});
+
+document.querySelectorAll('[data-staff-action="product-overview"]').forEach((button) => {
+    button.addEventListener('click', () => {
+        staffDashboard?.classList.remove('staff-orders-mode');
+        staffOrdersPanel?.classList.add('hidden');
+        staffDashboardMenu?.classList.add('hidden');
+        staffMenuToggle?.setAttribute('aria-expanded', 'false');
+        staffDashboard?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+});
+
+if (btnRefreshStaffOrders) btnRefreshStaffOrders.addEventListener('click', loadStaffOrders);
 
 if (btnCloseProfileModal) {
     btnCloseProfileModal.addEventListener('click', () => {
