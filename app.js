@@ -175,15 +175,13 @@ function showToast(message, type = 'info') {
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
     toast.textContent = message;
-    toastContainer.appendChild(toast);
+    toastContainer.replaceChildren(toast);
 
+    const duration = type === 'error' || type === 'warning' ? 3000 : 1800;
     setTimeout(() => {
         toast.classList.add('hide');
-    }, 2400);
-
-    toast.addEventListener('transitionend', () => {
-        if (toast.parentElement) toast.parentElement.removeChild(toast);
-    });
+        setTimeout(() => toast.remove(), 220);
+    }, duration);
 }
 
 function getStoredTheme() {
@@ -381,7 +379,6 @@ async function fetchSalesSummary(date) {
         if (!response.ok) throw new Error('Failed to load sales summary');
         const data = await response.json();
         updateSalesSummaryUI(data);
-        showToast('Sales summary loaded.', 'success');
     } catch (error) {
         applyLocalSalesSummaryFallback(date);
         showToast('Unable to load sales summary from server. Loaded local summary instead.', 'warning');
@@ -607,7 +604,6 @@ btnRoleOwner.addEventListener('click', () => {
     authUsernameInput.value = '';
     authPasswordInput.value = '';
     checkAccountStatus();
-    showToast('Owner login selected.', 'info');
 });
 
 btnRoleStaff.addEventListener('click', () => {
@@ -616,7 +612,6 @@ btnRoleStaff.addEventListener('click', () => {
     authUsernameInput.value = '';
     authPasswordInput.value = '';
     checkAccountStatus();
-    showToast('Staff login selected.', 'info');
 });
 
 btnToggleAuth.addEventListener('click', () => {
@@ -627,7 +622,6 @@ btnToggleAuth.addEventListener('click', () => {
     }
     checkAccountStatus();
     setAuthMessage('Account cleared. Create a new one now.', 'success');
-    showToast('Account state cleared for current role.', 'success');
 });
 
 if (themeToggleBtn) {
@@ -668,7 +662,6 @@ authForm.addEventListener('submit', async (event) => {
         saveActiveSession(activeRole, username, password);
         showDashboard(activeRole);
         setAuthMessage(`Welcome ${activeRole === 'owner' ? 'Owner' : 'Staff'} access granted.`, 'success');
-        showToast('Login successful. Redirecting to dashboard.', 'success');
     } else {
         setAuthMessage('Invalid credentials for this role.', 'error');
         showToast('Login failed. Check your credentials.', 'error');
@@ -678,13 +671,11 @@ authForm.addEventListener('submit', async (event) => {
 btnLogout.addEventListener('click', () => {
     const confirmed = window.confirm('Do you want to log out now?');
     if (!confirmed) {
-        showToast('Logout canceled.', 'info');
         return;
     }
 
     clearActiveSession();
     hideDashboard();
-    showToast('Logged out successfully.', 'success');
 });
 
 saveOwnerBtn.addEventListener('click', async () => {
@@ -737,7 +728,6 @@ if (btnRefreshSales) {
 ownerResetBtn.addEventListener('click', async () => {
     const confirmed = window.confirm('Reset owner dashboard values to zero? This cannot be undone without undo.');
     if (!confirmed) {
-        showToast('Reset canceled.', 'info');
         return;
     }
 
@@ -1071,22 +1061,21 @@ function simulateStaffAction(actionLabel, quantity, totalCash) {
     localStorage.setItem('dashboard-values', JSON.stringify(currentValues));
 }
 
-const staffActionButtons = document.querySelectorAll('.action-set-btn');
-staffActionButtons.forEach((button) => {
-    button.addEventListener('click', () => {
-        const card = button.closest('.action-card');
+const actionCards = document.querySelectorAll('.action-card.square-card');
+actionCards.forEach((card) => {
+    card.addEventListener('click', () => {
+        const qtyInput = card.querySelector('.action-qty');
+        qtyInput.value = Number(qtyInput.value || 0) + 1;
+        
         const action = getStaffActionFromCard(card);
         const { label, qty, totalCash } = action;
 
-        if (!qty) {
-            setAuthMessage('Please enter a quantity for staff action.', 'error');
-            showToast('Please enter a quantity before setting action.', 'error');
-            return;
-        }
-
         currentStagedAction = { label, qty, total: totalCash };
         renderStagedActions();
-        showToast(`Action staged: ${label} x${qty}.`, 'success');
+
+        card.classList.add('active-action');
+        setTimeout(() => card.classList.remove('active-action'), 150);
+        showToast(`Added 1x ${label}`, 'info');
     });
 });
 
@@ -1094,7 +1083,6 @@ if (confirmOrderBtn) {
     confirmOrderBtn.addEventListener('click', async () => {
         const confirmed = window.confirm('Confirm and save these staff actions to the monitor?');
         if (!confirmed) {
-            showToast('Action confirmation canceled.', 'info');
             return;
         }
 
@@ -1290,7 +1278,7 @@ function renderOwnerOrdersTable(rows = []) {
     if (!ownerOrdersTableBody) return;
 
     if (!rows.length) {
-        ownerOrdersTableBody.innerHTML = '<tr><td colspan="6">No recent orders yet.</td></tr>';
+        ownerOrdersTableBody.innerHTML = '<tr><td colspan="7">No recent orders yet.</td></tr>';
         return;
     }
 
@@ -1300,18 +1288,139 @@ function renderOwnerOrdersTable(rows = []) {
         const qty = Number(row.qty) || 0;
         const total = Number(row.amount) || 0;
         const unitPrice = qty > 0 ? total / qty : total;
+        const date = row.created_at ? new Date(row.created_at.replace(' ', 'T')).toLocaleString() : '—';
 
         return `
-            <tr>
-                <td>${row.created_at ? new Date(row.created_at.replace(' ', 'T')).toLocaleString() : '—'}</td>
-                <td>${staffName}</td>
-                <td>${product}</td>
+            <tr data-order-id="${Number(row.id)}" data-action="${escapeHtml(product)}" data-qty="${qty}" data-price="${unitPrice}">
+                <td>${escapeHtml(date)}</td>
+                <td>${escapeHtml(staffName)}</td>
+                <td>${escapeHtml(product)}</td>
                 <td>${qty}</td>
                 <td>₱${unitPrice.toFixed(2)}</td>
                 <td>₱${total.toFixed(2)}</td>
+                <td>
+                    <div class="order-row-actions">
+                        <button class="secondary-btn order-edit-btn" type="button">Edit</button>
+                        <button class="secondary-btn order-save-btn" type="button">Save</button>
+                        <button class="secondary-btn order-decline-btn" type="button">Decline</button>
+                    </div>
+                </td>
             </tr>
         `;
     }).join('');
+}
+
+function escapeHtml(value) {
+    return String(value).replace(/[&<>"']/g, (character) => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+    })[character]);
+}
+
+async function refreshSalesAfterOrderSave() {
+    const date = ownerSummaryDate?.value || getTodayDate();
+    await fetchSalesSummary(date);
+    if (typeof fetchAndInitSalesGraph === 'function') await fetchAndInitSalesGraph();
+}
+
+async function saveSingleOwnerOrder(row) {
+    const orderId = Number(row.dataset.orderId);
+    const amount = Number(row.dataset.qty) * Number(row.dataset.price);
+    const saleResponse = await fetch('/api/sales-record', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount, note: 'Saved staff order' })
+    });
+    if (!saleResponse.ok) throw new Error('Unable to save order total.');
+
+    const savedResponse = await fetch(`/api/activity/${orderId}/mark-saved`, { method: 'POST' });
+    if (!savedResponse.ok) throw new Error('Unable to update order status.');
+
+    const order = {
+        staffName: row.cells[1].textContent.trim(),
+        product: row.dataset.action,
+        quantity: Number(row.dataset.qty),
+        price: Number(row.dataset.price),
+        total: amount
+    };
+    addSavedActivityReview({
+        date: row.cells[0].textContent.trim(),
+        details: `${order.staffName}: ${order.product} x${order.quantity} (₱${order.total.toFixed(2)})`,
+        rows: [order],
+        total: amount
+    });
+
+    await refreshSalesAfterOrderSave();
+    renderReviewList();
+    await fetchActivityLogs();
+}
+
+if (ownerOrdersTableBody) {
+    ownerOrdersTableBody.addEventListener('click', async (event) => {
+        const button = event.target.closest('button');
+        const row = button?.closest('tr[data-order-id]');
+        if (!button || !row) return;
+
+        if (button.classList.contains('order-edit-btn')) {
+            const product = row.dataset.action;
+            const quantity = Number(row.dataset.qty);
+            const price = Number(row.dataset.price);
+            row.cells[2].innerHTML = `<input class="order-edit-field order-edit-product" aria-label="Product" value="${escapeHtml(product)}">`;
+            row.cells[3].innerHTML = `<input class="order-edit-field order-edit-quantity" aria-label="Quantity" type="number" min="1" step="1" value="${quantity}">`;
+            row.cells[4].innerHTML = `<input class="order-edit-field order-edit-price" aria-label="Unit price" type="number" min="0" step="0.01" value="${price.toFixed(2)}">`;
+            row.cells[5].textContent = `₱${(quantity * price).toFixed(2)}`;
+            row.cells[6].innerHTML = '<div class="order-row-actions"><button class="secondary-btn order-edit-save-btn" type="button">Save edits</button><button class="secondary-btn order-edit-cancel-btn" type="button">Cancel</button></div>';
+            return;
+        }
+
+        if (button.classList.contains('order-edit-cancel-btn')) {
+            lastActivitySignature = '';
+            await fetchActivityLogs();
+            return;
+        }
+
+        try {
+            if (button.classList.contains('order-edit-save-btn')) {
+                const product = row.querySelector('.order-edit-product').value.trim();
+                const quantity = Number(row.querySelector('.order-edit-quantity').value);
+                const price = Number(row.querySelector('.order-edit-price').value);
+                if (!product || !Number.isInteger(quantity) || quantity < 1 || !Number.isFinite(price) || price < 0) {
+                    showToast('Enter a product, whole-number quantity, and valid price.', 'error');
+                    return;
+                }
+
+                const response = await fetch(`/api/activity/${Number(row.dataset.orderId)}/update`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: product, qty: quantity, amount: quantity * price })
+                });
+                if (!response.ok) throw new Error('Order edits could not be saved.');
+                showToast('Order updated.', 'success');
+                lastActivitySignature = '';
+                await fetchActivityLogs();
+                return;
+            }
+
+            if (button.classList.contains('order-save-btn')) {
+                await saveSingleOwnerOrder(row);
+                showToast('Order saved and added to sales.', 'success');
+                return;
+            }
+
+            if (button.classList.contains('order-decline-btn')) {
+                const response = await fetch(`/api/activity/${Number(row.dataset.orderId)}`, { method: 'DELETE' });
+                if (!response.ok) throw new Error('Order could not be declined.');
+                lastActivitySignature = '';
+                await fetchActivityLogs();
+                showToast('Order declined and removed from pending orders.', 'info');
+            }
+        } catch (error) {
+            showToast(error.message || 'Unable to update this order.', 'error');
+        }
+    });
 }
 
 async function fetchActivityLogs() {
@@ -1320,7 +1429,7 @@ async function fetchActivityLogs() {
         if (!resp.ok) throw new Error('Failed to load activity logs');
         const rows = await resp.json();
 
-        const activitySignature = rows.map((row) => `${row.created_at}|${row.staff_id}|${row.action}|${row.qty}|${row.amount}`).join('\n');
+        const activitySignature = rows.map((row) => `${row.id}|${row.created_at}|${row.staff_id}|${row.action}|${row.qty}|${row.amount}`).join('\n');
         if (activitySignature !== lastActivitySignature) {
             lastActivitySignature = activitySignature;
             renderOwnerOrdersTable(rows);

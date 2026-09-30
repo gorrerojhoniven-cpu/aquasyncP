@@ -248,7 +248,7 @@ app.post('/api/activity', (req, res) => {
 app.get('/api/activity', (req, res) => {
   const limit = Number(req.query.limit) || 20;
   const query = `
-    SELECT al.role, al.action, al.qty, al.amount, al.note, al.created_at, al.staff_id, 
+    SELECT al.id, al.role, al.action, al.qty, al.amount, al.note, al.created_at, al.staff_id, 
            COALESCE(sa.username, 'Unknown') as staff_name
     FROM activity_logs al
     LEFT JOIN staff_accounts sa ON al.staff_id = sa.id
@@ -259,6 +259,7 @@ app.get('/api/activity', (req, res) => {
   db.all(query, [limit], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows.map(r => ({ 
+      id: r.id,
       role: r.role, 
       action: r.action, 
       qty: r.qty, 
@@ -269,6 +270,56 @@ app.get('/api/activity', (req, res) => {
       staff_name: r.staff_name
     })));
   });
+});
+
+app.post('/api/activity/:id/update', (req, res) => {
+  const id = Number(req.params.id);
+  const action = String(req.body.action || '').trim();
+  const qty = Math.floor(Number(req.body.qty));
+  const amount = Number(req.body.amount);
+  if (!Number.isInteger(id) || id < 1 || !action || !Number.isInteger(qty) || qty < 1 || !Number.isFinite(amount) || amount < 0) {
+    return res.status(400).json({ error: 'A valid action, quantity, and amount are required.' });
+  }
+
+  db.run(
+    `UPDATE activity_logs SET action = ?, qty = ?, amount = ? WHERE id = ? AND IFNULL(is_saved, 0) = 0`,
+    [action, qty, amount, id],
+    function (err) {
+      if (err) return res.status(500).json({ error: err.message });
+      if (!this.changes) return res.status(404).json({ error: 'Pending order not found.' });
+      res.json({ success: true, id, action, qty, amount });
+    }
+  );
+});
+
+app.post('/api/activity/:id/mark-saved', (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id < 1) return res.status(400).json({ error: 'Invalid order ID.' });
+
+  db.run(
+    `UPDATE activity_logs SET is_saved = 1 WHERE id = ? AND IFNULL(is_saved, 0) = 0`,
+    [id],
+    function (err) {
+      if (err) return res.status(500).json({ error: err.message });
+      if (!this.changes) return res.status(404).json({ error: 'Pending order not found.' });
+      res.json({ success: true, id });
+    }
+  );
+});
+
+app.delete('/api/activity/:id', (req, res) => {
+  const id = Number(req.params.id);
+  if (!Number.isInteger(id) || id < 1) return res.status(400).json({ error: 'Invalid order ID.' });
+
+  db.run(
+    `DELETE FROM activity_logs WHERE id = ? AND IFNULL(is_saved, 0) = 0`,
+    [id],
+    function (err) {
+      if (err) return res.status(500).json({ error: err.message });
+      if (!this.changes) return res.status(404).json({ error: 'Pending order not found.' });
+      res.json({ success: true, id });
+    }
+  );
 });
 
 // Fetch ALL saved/archived activity logs from database for "Review All Logs"

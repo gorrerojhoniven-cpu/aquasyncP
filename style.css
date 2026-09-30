@@ -602,6 +602,29 @@ button, input, textarea {
     background: rgba(56, 189, 248, 0.04);
 }
 
+.order-row-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.order-row-actions button {
+    padding: 6px 9px;
+    font-size: 0.82rem;
+}
+
+.order-edit-field {
+    width: 100%;
+    min-width: 72px;
+    box-sizing: border-box;
+    padding: 7px;
+    border: 1px solid var(--panel-border);
+    border-radius: 6px;
+    background: var(--bg);
+    color: var(--text-primary);
+}
+
 .owner-review-panel {
     margin-top: 18px;
     padding: 20px;
@@ -1206,32 +1229,37 @@ button, input, textarea {
 
 .toast-container {
     position: fixed;
-    top: 18px;
-    right: 18px;
+    bottom: max(24px, env(safe-area-inset-bottom));
+    left: 50%;
+    transform: translateX(-50%);
     display: grid;
     gap: 10px;
+    justify-items: center;
     z-index: 9999;
     pointer-events: none;
 }
 
 .toast {
-    min-width: 240px;
-    max-width: 320px;
+    width: min(320px, calc(100vw - 48px));
+    box-sizing: border-box;
     padding: 12px 16px;
-    border-radius: 14px;
+    border-radius: 12px;
     background: var(--card-bg);
     color: var(--text-primary);
     border: 1px solid var(--panel-border);
-    box-shadow: var(--shadow);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     opacity: 1;
-    transform: translateX(0);
-    transition: opacity 0.25s ease, transform 0.25s ease;
-    pointer-events: auto;
+    transform: translateY(0);
+    transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    overflow-wrap: anywhere;
+    pointer-events: none;
+    text-align: center;
+    font-weight: 500;
 }
 
 .toast.hide {
     opacity: 0;
-    transform: translateX(20px);
+    transform: translateY(20px);
 }
 
 .toast-info {
@@ -1244,6 +1272,26 @@ button, input, textarea {
 
 .toast-error {
     border-color: rgba(248, 113, 113, 0.35);
+}
+
+@media (max-width: 600px) {
+    .toast-container {
+        bottom: max(16px, env(safe-area-inset-bottom));
+        width: 100%;
+        padding: 0 16px;
+        box-sizing: border-box;
+    }
+
+    .toast {
+        width: 100%;
+        max-width: 400px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .toast {
+        transition: none;
+    }
 }
 
 .chart-wrapper {
@@ -2279,3 +2327,56 @@ body.theme-light .logout-btn {
     background: #fee2e2;
     color: #991b1b;
 }
+
+/* POS Square Layout */
+.square-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 12px;
+    max-width: 800px;
+}
+
+.square-card {
+    aspect-ratio: 1 / 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    cursor: pointer;
+    background: var(--surface);
+    border: 1px solid var(--panel-border);
+    border-radius: 16px;
+    padding: 12px;
+    transition: transform 0.1s, box-shadow 0.1s, border-color 0.1s;
+    color: var(--text-primary);
+}
+
+.square-card:hover {
+    transform: scale(1.02);
+    border-color: #38bdf8;
+    background: rgba(56, 189, 248, 0.05);
+}
+
+.square-card:active {
+    transform: scale(0.95);
+}
+
+.square-card .action-card-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.square-card .action-label {
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
+.square-card .action-price, 
+.square-card .action-meta {
+    color: var(--button-accent);
+    font-size: 0.85rem;
+}
