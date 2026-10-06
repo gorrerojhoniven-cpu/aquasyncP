@@ -478,6 +478,19 @@ async function restoreActiveSession() {
     }
 }
 
+function closeDashboardMenus() {
+    const ownerSidebar = document.querySelector('.owner-sidebar');
+    const ownerToggle = document.getElementById('owner-menu-toggle');
+    const staffMenu = document.getElementById('staff-dashboard-menu');
+    const staffToggle = document.getElementById('staff-menu-toggle');
+
+    ownerSidebar?.classList.add('hidden');
+    document.getElementById('owner-dashboard')?.classList.remove('mobile-menu-open');
+    ownerToggle?.setAttribute('aria-expanded', 'false');
+    staffMenu?.classList.add('hidden');
+    staffToggle?.setAttribute('aria-expanded', 'false');
+}
+
 function showDashboard(role) {
     loggedInRole = role;
     document.getElementById('app-shell').classList.toggle('owner-session', role === 'owner');
@@ -485,10 +498,9 @@ function showDashboard(role) {
     btnLogout.classList.remove('hidden');
     const dashboardMenu = document.getElementById(role === 'owner' ? 'owner-dashboard-menu' : 'staff-dashboard-menu');
     const topbarActions = document.querySelector('.topbar-actions');
+    closeDashboardMenus();
     if (dashboardMenu && topbarActions) {
         if (role === 'staff') {
-            dashboardMenu.classList.add('hidden');
-            document.getElementById('staff-menu-toggle').setAttribute('aria-expanded', 'false');
             topbarActions.classList.add('hidden');
             dashboardMenu.prepend(themeToggleBtn);
             dashboardMenu.appendChild(btnLogout);
@@ -531,6 +543,7 @@ function switchOwnerSection(sectionName) {
     const ownerDashboardCard = document.getElementById('owner-dashboard');
     if (ownerDashboardCard) {
         ownerDashboardCard.classList.remove('mobile-menu-open');
+        ownerDashboardCard.querySelector('.owner-sidebar')?.classList.add('hidden');
         const toggleButton = document.getElementById('owner-menu-toggle');
         if (toggleButton) {
             toggleButton.setAttribute('aria-expanded', 'false');
@@ -542,8 +555,10 @@ const ownerMenuToggle = document.getElementById('owner-menu-toggle');
 if (ownerMenuToggle) {
     ownerMenuToggle.addEventListener('click', () => {
         const ownerDashboardCard = document.getElementById('owner-dashboard');
-        if (!ownerDashboardCard) return;
-        const isOpen = ownerDashboardCard.classList.toggle('mobile-menu-open');
+        const ownerSidebar = ownerDashboardCard?.querySelector('.owner-sidebar');
+        if (!ownerDashboardCard || !ownerSidebar) return;
+        const isOpen = ownerSidebar.classList.toggle('hidden') === false;
+        ownerDashboardCard.classList.toggle('mobile-menu-open', isOpen);
         ownerMenuToggle.setAttribute('aria-expanded', String(isOpen));
     });
 }
@@ -552,6 +567,7 @@ document.querySelectorAll('.menu-item[data-owner-section]').forEach((item) => {
     item.addEventListener('click', () => {
         const sectionName = item.dataset.ownerSection;
         if (sectionName === 'staff') {
+            closeDashboardMenus();
             document.getElementById('btn-manage-staff')?.click();
             return;
         }
@@ -1907,6 +1923,12 @@ if (btnStaffSettings && modalStaffProfile) {
         staffMenuToggle?.setAttribute('aria-expanded', 'false');
     });
 }
+
+document.addEventListener('click', (event) => {
+    if (!loggedInRole || !(event.target instanceof Element)) return;
+    if (event.target.closest('#owner-menu-toggle, #staff-menu-toggle, #owner-dashboard-menu, #staff-dashboard-menu')) return;
+    closeDashboardMenus();
+});
 
 async function loadStaffOrders() {
     if (!staffOrdersList || !loggedInStaffId) return;

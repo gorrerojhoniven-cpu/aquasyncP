@@ -2067,7 +2067,7 @@ body.theme-light {
 }
 
 .mobile-menu-toggle {
-    display: none;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
@@ -2329,6 +2329,28 @@ dialog::backdrop {
         padding: 12px;
     }
 
+    .action-grid.square-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 8px;
+        max-width: none;
+    }
+
+    .action-grid.square-grid .square-card {
+        min-height: 96px;
+        aspect-ratio: auto;
+        padding: 10px 7px;
+    }
+
+    .action-grid.square-grid .action-label {
+        font-size: 0.82rem;
+        line-height: 1.2;
+    }
+
+    .action-grid.square-grid .action-price,
+    .action-grid.square-grid .action-meta {
+        font-size: 0.78rem;
+    }
+
     .staff-form-grid {
         grid-template-columns: 1fr;
     }
@@ -2342,7 +2364,8 @@ dialog::backdrop {
     }
 
     .staged-action-row {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 8px;
     }
 
     .staged-action-details {
@@ -2350,10 +2373,38 @@ dialog::backdrop {
     }
 
     .staged-remove-btn {
-        width: 100%;
+        width: auto;
+        white-space: nowrap;
     }
 
     .action-set-btn {
+        width: 100%;
+    }
+}
+
+@media (max-width: 360px) {
+    .staff-order-summary {
+        grid-template-columns: 28px minmax(0, 1fr);
+        gap: 8px;
+        padding: 10px;
+    }
+
+    .staff-order-summary .step-pill {
+        width: 28px;
+        height: 28px;
+        font-size: 0.85rem;
+    }
+
+    .staged-action-row {
+        grid-template-columns: minmax(0, 1fr);
+        padding: 8px;
+    }
+
+    .staged-action-details {
+        grid-column: auto;
+    }
+
+    .staged-remove-btn {
         width: 100%;
     }
 }
