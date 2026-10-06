@@ -1052,13 +1052,49 @@ button, input, textarea {
     font-weight: 700;
 }
 
-.staged-quantity-input {
-    width: 76px;
-    padding: 8px;
+.staged-quantity-control {
+    display: grid;
+    grid-template-columns: 34px 40px 34px;
+    align-items: center;
+    overflow: hidden;
     border: 1px solid var(--panel-border);
     border-radius: 7px;
     background: var(--panel);
+}
+
+.staged-quantity-input {
+    width: 40px;
+    min-width: 0;
+    padding: 8px 0;
+    border: 0;
+    border-radius: 0;
+    appearance: textfield;
+    background: transparent;
     color: var(--text-primary);
+    text-align: center;
+}
+
+.staged-quantity-input::-webkit-inner-spin-button,
+.staged-quantity-input::-webkit-outer-spin-button {
+    margin: 0;
+    appearance: none;
+}
+
+.staged-quantity-step {
+    width: 34px;
+    height: 36px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--text-primary);
+    font: inherit;
+    font-size: 1.1rem;
+    cursor: pointer;
+}
+
+.staged-quantity-step:hover {
+    background: var(--surface);
+    color: var(--button-accent);
 }
 
 .staged-remove-btn {
@@ -1581,6 +1617,71 @@ dialog.custom-modal {
     max-width: 600px;
     width: 90%;
     box-shadow: var(--shadow);
+}
+
+dialog.confirmation-modal {
+    width: min(440px, calc(100% - 32px));
+    padding: 28px;
+    text-align: center;
+}
+
+.confirmation-icon {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    margin: 0 auto 18px;
+    border: 1px solid rgba(248, 113, 113, 0.3);
+    border-radius: 16px;
+    background: rgba(248, 113, 113, 0.12);
+    color: #f87171;
+    font-size: 1.8rem;
+}
+
+dialog.confirmation-modal .modal-title {
+    font-size: 1.2rem;
+}
+
+.confirmation-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.confirmation-btn {
+    min-height: 52px;
+    border: 1px solid var(--panel-border);
+    border-radius: 12px;
+    background: var(--surface);
+    color: var(--text-primary);
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s, background 0.2s;
+}
+
+.confirmation-btn:hover {
+    transform: translateY(-2px);
+}
+
+.confirmation-btn.confirm-yes {
+    border-color: rgba(248, 113, 113, 0.35);
+    background: rgba(248, 113, 113, 0.1);
+}
+
+.confirmation-btn.confirm-yes:hover {
+    border-color: #f87171;
+    background: rgba(248, 113, 113, 0.18);
+}
+
+.confirmation-btn.confirm-no {
+    color: var(--text-secondary);
+}
+
+.confirmation-btn.confirm-no:hover {
+    border-color: var(--button-accent);
+    background: var(--surface);
+    color: var(--text-primary);
 }
 
 dialog.custom-modal::backdrop {
@@ -2379,4 +2480,4 @@ body.theme-light .logout-btn {
 .square-card .action-meta {
     color: var(--button-accent);
     font-size: 0.85rem;
-}
+}

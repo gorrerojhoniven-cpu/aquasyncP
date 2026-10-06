@@ -17,6 +17,9 @@ const authPasswordInput = document.getElementById('auth-password');
 const authForm = document.getElementById('auth-form');
 const authOverlay = document.getElementById('auth-overlay');
 const btnLogout = document.getElementById('btn-logout');
+const logoutDialog = document.getElementById('modal-logout');
+const btnConfirmLogout = document.getElementById('btn-confirm-logout');
+const btnCancelLogout = document.getElementById('btn-cancel-logout');
 const ownerDashboard = document.getElementById('owner-dashboard');
 const staffDashboard = document.getElementById('staff-dashboard');
 const authStatus = document.getElementById('auth-status');
@@ -27,6 +30,9 @@ const ownerActivityLog = document.getElementById('owner-activity-log');
 const ownerMonitorStatus = document.getElementById('owner-monitor-status');
 const toastContainer = document.getElementById('toast-container');
 const confirmOrderBtn = document.querySelector('.confirm-btn');
+const transactionConfirmDialog = document.getElementById('modal-transaction-confirm');
+const btnConfirmTransaction = document.getElementById('btn-confirm-transaction');
+const btnCancelTransaction = document.getElementById('btn-cancel-transaction');
 const ownerSummaryDate = document.getElementById('owner-summary-date');
 const btnRefreshSales = document.getElementById('btn-refresh-sales');
 const dailySalesText = document.getElementById('daily-sales');
@@ -83,9 +89,14 @@ function renderStagedActions() {
                 <strong>${action.label}</strong>
                 <span>₱${action.unitPrice.toFixed(2)} each · Subtotal: ₱${action.totalCash.toFixed(2)}</span>
             </div>
-            <label class="staged-quantity-label">Qty
-                <input class="staged-quantity-input" type="number" min="0" value="${action.qty}" aria-label="Quantity for ${action.label}">
-            </label>
+            <div class="staged-quantity-label">
+                <span>Qty</span>
+                <div class="staged-quantity-control">
+                    <button type="button" class="staged-quantity-step" data-step="-1" aria-label="Decrease quantity for ${action.label}">-</button>
+                    <input class="staged-quantity-input" type="number" min="0" step="1" value="${action.qty}" aria-label="Quantity for ${action.label}">
+                    <button type="button" class="staged-quantity-step" data-step="1" aria-label="Increase quantity for ${action.label}">+</button>
+                </div>
+            </div>
             <button type="button" class="staged-remove-btn">Remove</button>
         </div>
     `).join('');
@@ -96,6 +107,12 @@ function renderStagedActions() {
         quantityInput.addEventListener('input', () => {
             card.querySelector('.action-qty').value = Math.max(0, Number(quantityInput.value) || 0);
             renderStagedActions();
+        });
+        row.querySelectorAll('.staged-quantity-step').forEach((button) => {
+            button.addEventListener('click', () => {
+                quantityInput.value = Math.max(0, Number(quantityInput.value) + Number(button.dataset.step));
+                quantityInput.dispatchEvent(new Event('input', { bubbles: true }));
+            });
         });
         row.querySelector('.staged-remove-btn').addEventListener('click', () => {
             card.querySelector('.action-qty').value = '';
@@ -470,10 +487,14 @@ function showDashboard(role) {
     const topbarActions = document.querySelector('.topbar-actions');
     if (dashboardMenu && topbarActions) {
         if (role === 'staff') {
+            dashboardMenu.classList.add('hidden');
+            document.getElementById('staff-menu-toggle').setAttribute('aria-expanded', 'false');
+            topbarActions.classList.add('hidden');
             dashboardMenu.prepend(themeToggleBtn);
             dashboardMenu.appendChild(btnLogout);
-            topbarActions.classList.add('hidden');
         } else {
+            topbarActions.classList.remove('hidden');
+            topbarActions.append(themeToggleBtn, btnLogout);
             dashboardMenu.appendChild(topbarActions);
         }
     }
@@ -541,12 +562,12 @@ document.querySelectorAll('.menu-item[data-owner-section]').forEach((item) => {
 function hideDashboard() {
     loggedInRole = null;
     document.getElementById('app-shell').classList.remove('owner-session');
-    const topbar = document.querySelector('.topbar');
     const topbarActions = document.querySelector('.topbar-actions');
-    if (topbar && topbarActions) {
+    const appShell = document.getElementById('app-shell');
+    if (appShell && topbarActions) {
         topbarActions.classList.remove('hidden');
         topbarActions.append(themeToggleBtn, btnLogout);
-        topbar.appendChild(topbarActions);
+        appShell.insertBefore(topbarActions, document.getElementById('toast-container'));
     }
     loggedInStaffId = null;
     loggedInStaffUsername = null;
@@ -669,13 +690,23 @@ authForm.addEventListener('submit', async (event) => {
 });
 
 btnLogout.addEventListener('click', () => {
-    const confirmed = window.confirm('Do you want to log out now?');
-    if (!confirmed) {
-        return;
-    }
+    logoutDialog.showModal();
+});
 
+btnConfirmLogout.addEventListener('click', () => {
     clearActiveSession();
     hideDashboard();
+    logoutDialog.close();
+});
+
+btnCancelLogout.addEventListener('click', () => {
+    logoutDialog.close();
+});
+
+logoutDialog.addEventListener('click', (event) => {
+    if (event.target === logoutDialog) {
+        logoutDialog.close();
+    }
 });
 
 saveOwnerBtn.addEventListener('click', async () => {
@@ -1080,12 +1111,13 @@ actionCards.forEach((card) => {
 });
 
 if (confirmOrderBtn) {
-    confirmOrderBtn.addEventListener('click', async () => {
-        const confirmed = window.confirm('Confirm and save these staff actions to the monitor?');
-        if (!confirmed) {
-            return;
-        }
+    confirmOrderBtn.addEventListener('click', () => {
+        transactionConfirmDialog.showModal();
+    });
+}
 
+btnConfirmTransaction.addEventListener('click', async () => {
+        transactionConfirmDialog.close();
         const actionCards = document.querySelectorAll('.action-card');
         const actionsToProcess = [];
 
@@ -1147,8 +1179,17 @@ if (confirmOrderBtn) {
         } catch (error) {
             showToast('Failed to record activity.', 'error');
         }
-    });
-}
+});
+
+btnCancelTransaction.addEventListener('click', () => {
+    transactionConfirmDialog.close();
+});
+
+transactionConfirmDialog.addEventListener('click', (event) => {
+    if (event.target === transactionConfirmDialog) {
+        transactionConfirmDialog.close();
+    }
+});
 
 if (btnSaveActivity) {
     btnSaveActivity.addEventListener('click', async () => {

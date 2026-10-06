@@ -19,6 +19,24 @@
 
         <div id="toast-container" class="toast-container" role="status" aria-live="polite" aria-atomic="true"></div>
 
+        <dialog id="modal-logout" class="custom-modal confirmation-modal" aria-labelledby="logout-dialog-title">
+            <div class="confirmation-icon" aria-hidden="true">↪</div>
+            <h2 id="logout-dialog-title" class="modal-title">Do you want to log out now?</h2>
+            <div class="confirmation-actions">
+                <button id="btn-confirm-logout" type="button" class="confirmation-btn confirm-yes">Yes</button>
+                <button id="btn-cancel-logout" type="button" class="confirmation-btn confirm-no">No</button>
+            </div>
+        </dialog>
+
+        <dialog id="modal-transaction-confirm" class="custom-modal confirmation-modal" aria-labelledby="transaction-confirm-title">
+            <div class="confirmation-icon" aria-hidden="true">✓</div>
+            <h2 id="transaction-confirm-title" class="modal-title">Are you sure you want to confirm transaction?</h2>
+            <div class="confirmation-actions">
+                <button id="btn-confirm-transaction" type="button" class="confirmation-btn confirm-yes">Yes</button>
+                <button id="btn-cancel-transaction" type="button" class="confirmation-btn confirm-no">No</button>
+            </div>
+        </dialog>
+
         <main class="dashboard-container">
             <!-- ================= OWNER DASHBOARD ================= -->
             <section id="owner-dashboard" class="dashboard-card hidden owner-monitor-card">
