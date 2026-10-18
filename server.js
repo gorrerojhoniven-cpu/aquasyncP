@@ -134,11 +134,16 @@ app.post('/api/dashboard-state/transactions', (req, res) => {
 
     actions.forEach(({ label, qty, totalCash }) => {
       const quantity = Math.max(0, Number(qty) || 0);
+      const actionName = String(label).toLowerCase();
       values.revenue += Number(totalCash) || 0;
-      values.water = Math.max(0, values.water - quantity);
-      if (String(label).toLowerCase().includes('new jug')) values.containers = Math.max(0, values.containers - quantity);
-      if (String(label).toLowerCase().includes('dispatch')) values.borrowed += quantity;
-      if (String(label).toLowerCase().includes('recover')) {
+
+      if (!actionName.includes('recover')) {
+        values.water = Math.max(0, values.water - quantity * 25);
+      }
+
+      if (actionName.includes('new jug')) values.containers = Math.max(0, values.containers - quantity);
+      if (actionName.includes('dispatch')) values.borrowed += quantity;
+      if (actionName.includes('recover')) {
         values.containers += quantity;
         values.borrowed = Math.max(0, values.borrowed - quantity);
       }

@@ -64,7 +64,7 @@ db.serialize(() => {
   sample.finalize();
 
   const activitySample = db.prepare(`INSERT INTO activity_logs (role, action, qty, amount, note, created_at) VALUES (?, ?, ?, ?, ?, ?)`);
-  activitySample.run('staff', '5-Gallon Water Refill', 12, 240, 'Walk-in sale sample', `${today} 09:20:00`);
+  activitySample.run('staff', '5-Jug Water Refill (25L)', 12, 240, 'Walk-in sale sample', `${today} 09:20:00`);
   activitySample.finalize();
 });
 

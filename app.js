@@ -57,7 +57,12 @@ const activeSessionKey = 'aquasync_active_session';
 const activeOwnerSectionKey = 'aquasync_active_owner_section';
 const rolloverMetaKey = 'dashboard-rollover-date';
 const defaultDashboardValues = { revenue: 1200, water: 1232, containers: 65, borrowed: 112 };
+const JUG_LITERS = 25;
 let currentStagedAction = { label: 'No action', qty: 0, total: 0 };
+
+function getJugLiters(quantity) {
+    return Number(quantity || 0) * JUG_LITERS;
+}
 
 function getStaffActionFromCard(card) {
     const qty = Number(card.querySelector('.action-qty')?.value) || 0;
@@ -1090,9 +1095,12 @@ function simulateStaffAction(actionLabel, quantity, totalCash) {
     saveLatestOwnerUndoState(previousState);
 
     currentValues.revenue = Number(currentValues.revenue || 0) + totalCash;
-    currentValues.water = Math.max(0, Number(currentValues.water || 0) - quantity);
     currentValues.containers = Number(currentValues.containers || 0);
     currentValues.borrowed = Number(currentValues.borrowed || 0);
+
+    if (!actionLabel.toLowerCase().includes('recover')) {
+        currentValues.water = Math.max(0, Number(currentValues.water || 0) - getJugLiters(quantity));
+    }
 
     if (actionLabel.toLowerCase().includes('new jug')) {
         currentValues.containers = Math.max(0, currentValues.containers - quantity);
