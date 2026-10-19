@@ -1940,13 +1940,13 @@ document.addEventListener('click', (event) => {
 
 async function loadStaffOrders() {
     if (!staffOrdersList || !loggedInStaffId) return;
-    staffOrdersList.innerHTML = '<tr><td colspan="6">Loading orders...</td></tr>';
+    staffOrdersList.innerHTML = '<tr><td colspan="7">Loading orders...</td></tr>';
     try {
         const response = await fetch(`/api/activity/staff/${loggedInStaffId}`);
         if (!response.ok) throw new Error('Unable to load orders');
         const orders = await response.json();
         if (!orders.length) {
-            staffOrdersList.innerHTML = '<tr><td colspan="6">No orders yet.</td></tr>';
+            staffOrdersList.innerHTML = '<tr><td colspan="7">No orders yet.</td></tr>';
             return;
         }
         staffOrdersList.innerHTML = orders.map((order) => {
@@ -1955,19 +1955,83 @@ async function loadStaffOrders() {
             const date = order.created_at ? new Date(order.created_at.replace(' ', 'T')).toLocaleString() : '—';
             const unitPrice = quantity > 0 ? total / quantity : total;
             return `
-            <tr>
+            <tr data-order-id="${Number(order.id)}" data-action="${escapeHtml(order.action || 'Order')}" data-qty="${quantity}" data-price="${unitPrice}" data-date="${escapeHtml(order.created_at || '')}">
                 <td>${date}</td>
-                <td>${loggedInStaffUsername || 'Staff'}</td>
-                <td>${order.action || 'Order'}</td>
+                <td>${escapeHtml(loggedInStaffUsername || 'Staff')}</td>
+                <td>${escapeHtml(order.action || 'Order')}</td>
                 <td>${quantity}</td>
                 <td>₱${unitPrice.toFixed(2)}</td>
                 <td>₱${total.toFixed(2)}</td>
+                <td><button class="secondary-btn staff-print-receipt-btn" type="button" aria-label="Print receipt for order ${Number(order.id)}">Print receipt</button></td>
             </tr>
         `;
         }).join('');
     } catch (error) {
-        staffOrdersList.innerHTML = '<tr><td colspan="6">Unable to load orders right now.</td></tr>';
+        staffOrdersList.innerHTML = '<tr><td colspan="7">Unable to load orders right now.</td></tr>';
     }
+}
+
+function printStaffReceipt(row) {
+    const printWindow = window.open('', '_blank', 'width=420,height=720');
+    if (!printWindow) {
+        showToast('Allow pop-ups to print the receipt.', 'warning');
+        return;
+    }
+
+    const orderId = Number(row.dataset.orderId);
+    const product = escapeHtml(row.dataset.action || 'Order');
+    const quantity = Number(row.dataset.qty) || 0;
+    const unitPrice = Number(row.dataset.price) || 0;
+    const total = quantity * unitPrice;
+    const staffName = escapeHtml(loggedInStaffUsername || 'Staff');
+    const date = row.dataset.date
+        ? new Date(row.dataset.date.replace(' ', 'T')).toLocaleString()
+        : new Date().toLocaleString();
+
+    printWindow.document.open();
+    printWindow.document.write(`<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Receipt ORD-${orderId}</title>
+    <style>
+        @page { size: 80mm auto; margin: 5mm; }
+        * { box-sizing: border-box; }
+        body { width: 70mm; margin: 0 auto; color: #111; font: 12px/1.4 Arial, sans-serif; }
+        h1, p { margin: 0; }
+        header { text-align: center; padding-bottom: 10px; border-bottom: 1px dashed #777; }
+        h1 { font-size: 19px; }
+        .subtitle { margin-top: 3px; }
+        .meta { padding: 9px 0; border-bottom: 1px dashed #777; }
+        .meta p { margin: 2px 0; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th, td { padding: 4px 0; text-align: left; vertical-align: top; }
+        th:last-child, td:last-child { text-align: right; white-space: nowrap; }
+        .total { border-top: 1px dashed #777; padding-top: 8px; text-align: right; font-size: 15px; font-weight: bold; }
+        footer { margin-top: 18px; text-align: center; }
+    </style>
+</head>
+<body>
+    <header><h1>AquaSync</h1><p class="subtitle">SALES RECEIPT</p></header>
+    <section class="meta"><p>Receipt: ORD-${orderId}</p><p>Date: ${escapeHtml(date)}</p><p>Cashier: ${staffName}</p></section>
+    <table><thead><tr><th>Item</th><th>Qty</th><th>Amount</th></tr></thead>
+        <tbody><tr><td>${product}<br>₱${unitPrice.toFixed(2)} each</td><td>${quantity}</td><td>₱${total.toFixed(2)}</td></tr></tbody>
+    </table>
+    <div class="total">TOTAL&nbsp; ₱${total.toFixed(2)}</div>
+    <footer><p>Thank you for your purchase!</p></footer>
+    <script>window.onload = () => { window.focus(); window.print(); };</script>
+</body>
+</html>`);
+    printWindow.document.close();
+}
+
+if (staffOrdersList) {
+    staffOrdersList.addEventListener('click', (event) => {
+        const button = event.target.closest('.staff-print-receipt-btn');
+        const row = button?.closest('tr[data-order-id]');
+        if (row) printStaffReceipt(row);
+    });
 }
 
 document.querySelectorAll('[data-staff-action="orders"]').forEach((button) => {

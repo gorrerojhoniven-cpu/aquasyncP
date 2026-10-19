@@ -614,7 +614,7 @@ app.get('/api/activity/staff/:staffId', (req, res) => {
   if (!Number.isInteger(staffId) || staffId < 1) return res.status(400).json({ error: 'Invalid staff id' });
 
   db.all(
-    `SELECT action, qty, amount, note, created_at
+    `SELECT id, action, qty, amount, note, created_at
      FROM activity_logs
      WHERE staff_id = ?
      ORDER BY created_at DESC LIMIT 50`,
